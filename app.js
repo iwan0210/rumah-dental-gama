@@ -1,0 +1,23 @@
+require('dotenv').config()
+const express = require('express')
+const path = require('path')
+const app = express()
+const port = process.env.PORT || 3000
+
+app.use(express.static(path.join(__dirname, 'frontend/public')));
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, 'frontend/views'))
+
+const errorHandler = require('./backend/middleware/ErrorHandler')
+const registerRoutes = require('./backend/api/register/routes')
+const visitorRoutes = require('./frontend/visitor')
+
+app.use('/api/register', registerRoutes, errorHandler)
+app.use('/', visitorRoutes)
+
+
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`)
+})
