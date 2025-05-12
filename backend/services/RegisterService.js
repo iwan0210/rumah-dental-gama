@@ -11,7 +11,7 @@ class RegisterClass {
 
         const id = nanoid(32)
         await this._pool.query("INSERT INTO registrasi (id, nama, nik, jk, tgl_lahir, alamat, nohp, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [id, nama, nik, jk, tglLahir, alamat, nohp, tanggalDaftar, keluhan])
+            [id, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan])
 
         return id
     }
@@ -19,7 +19,7 @@ class RegisterClass {
     async insertCompleteRegister(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total) {
         const id = nanoid(32)
         await this._pool.query("INSERT INTO registrasi VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [id, nama, nik, jk, tglLahir, alamat, nohp, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total])
+            [id, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total])
         return id
     }
 

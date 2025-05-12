@@ -53,9 +53,8 @@
                                         <div class="col-sm-6 mb-3">
                                             <label for="jenis-kelamin" class="form-label">Jenis Kelamin</label>
                                             <select class="form-select" id="jenis-kelamin" required>
-                                                <option value="" disabled selected>Pilih Jenis Kelamin</option>
-                                                <option value="Laki-laki">Laki-laki</option>
-                                                <option value="Perempuan">Perempuan</option>
+                                                <option value="L">Laki-laki</option>
+                                                <option value="P">Perempuan</option>
                                             </select>
                                         </div>
                                         <div class="col-sm-6 mb-3">
@@ -129,12 +128,18 @@
         document.addEventListener('DOMContentLoaded', function () {
             const inputBiaya = document.getElementById('biaya')
 
-            inputBiaya.addEventListener('input', function (e) {
+            inputBiaya.addEventListener('input', e => {
                 let value = e.target.value.replace(/[^\d]/g, '');  // Remove non-numeric characters
                 if (value) {
                     // Format with commas as the user types
                     e.target.value = new Intl.NumberFormat('en-US').format(value);
                 }
+            })
+
+            document.getElementById('add-data-form').addEventListener('submit', e => {
+                e.preventDefault()
+
+                insertData()
             })
         })
 

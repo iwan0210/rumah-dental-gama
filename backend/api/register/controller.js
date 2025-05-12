@@ -108,7 +108,7 @@ class RegisterHandler {
     async postCompleteRegisterHandler(req, res, next) {
         try {
             const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total } = req.body
-            this._validator.validateAddRegisterPayload(req.body)
+            this._validator.validatePutRegisterPayload(req.body)
             const id = await this._service.insertCompleteRegister(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total)
             const response = {
                 error: false,
