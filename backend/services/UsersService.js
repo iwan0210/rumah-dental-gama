@@ -7,14 +7,14 @@ class UsersService {
         this._pool = pool
     }
 
-    async verifyUser(user, password) {
-        const [result] = await this._pool.query("SELECT * FROM users WHERE user = ? AND password = ?", [user, password])
+    async verifyUser(username, password) {
+        const [result] = await this._pool.query("SELECT * FROM users WHERE user = ?", [username])
 
         if (result.length < 1) {
             throw new AuthenticationError("Kredensial  yang anda berikan salah")
         }
 
-        const { id, usern, name, password: hashedPassword } = result[0]
+        const { id, user, name, password: hashedPassword } = result[0]
 
         const match = await bcrypt.compare(password, hashedPassword)
         if (!match) {

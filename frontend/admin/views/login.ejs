@@ -102,9 +102,12 @@
                         password
                     })
 
-                    const { accessToken } = response.data
+                    const { accessToken, id, user: userId, name } = response.data.data
 
                     localStorage.setItem('accessToken', accessToken)
+                    localStorage.setItem('id', id)
+                    localStorage.setItem('user', userId)
+                    localStorage.setItem('name', name)
                     window.location.href = '/admin'
                 } catch (error) {
                     console.error('Error:', error)

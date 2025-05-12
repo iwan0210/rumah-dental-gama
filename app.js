@@ -24,7 +24,6 @@ app.use('/api/users', usersRoutes, errorHandler)
 app.use('/', visitorRoutes)
 app.use('/admin', adminRoutes)
 
-
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`)
 })

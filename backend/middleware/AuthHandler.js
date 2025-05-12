@@ -1,8 +1,7 @@
 const jwt = require('jsonwebtoken')
 const AuthenticationError = require('../exceptions/AuthenticationError')
-const ClientError = require('../exceptions/ClientError')
 
-const verifyToken = (req, res, next) => {
+const verifyToken = (req, _, next) => {
     try {
         const { authorization } = req.headers
 
@@ -19,7 +18,7 @@ const verifyToken = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
         if (!decoded) {
-            throw new ClientError('Invalid token')
+            throw new AuthenticationError('Invalid token')
         }
 
         req.id = decoded.id

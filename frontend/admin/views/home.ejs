@@ -24,12 +24,12 @@
             <div class="card">
               <div class="card-header">
                 <h3 class="card-title">Data Pasien</h3>
-                  <div class="card-tools">
-                    <div class="input-group mb-3">
-                    <input class="form-control" type="date" id="start-date">
+                <div class="card-tools">
+                  <div class="input-group">
+                    <input class="form-control" type="date" id="start-date" value="<%= defaultDate %>">
                     <span class="input-group-text">s/d</span>
-                    <input class="form-control" type="date" id="end-date">
-                    <button class="btn btn-warning" type="button">Button</button>
+                    <input class="form-control" type="date" id="end-date" value="<%= defaultDate %>">
+                    <button class="btn btn-warning" id="filter-btn" type=" button">Filter</button>
                   </div>
                 </div>
               </div>
@@ -44,48 +44,22 @@
                         <th>Jenis Kelamin</th>
                         <th>Tanggal Lahir</th>
                         <th>Alamat</th>
+                        <th>Nomor Telepon</th>
                         <th>Tanggal Periksa</th>
                         <th>Keluhan</th>
                         <th>Action</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      <tr>
-                        <td>1.</td>
-                        <td>M. Arief Kurniawan</td>
-                        <td>3326140210000001</td>
-                        <td>Laki-laki</td>
-                        <td>02-10-2000</td>
-                        <td>Wonoyogo Gg.5 Buaran Pekalongan</td>
-                        <td>10-05-2025</td>
-                        <td>Karang Gigi, Gusi Sakit, Gigi berlubang</td>
-                        <td>
-                          <button class="btn btn-success">Detail</button>&nbsp;
-                          <button class="btn btn-primary">edit</button>&nbsp;
-                          <button class="btn btn-danger">delete</button>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>1.</td>
-                        <td>M. Arief Kurniawan</td>
-                        <td>3326140210000001</td>
-                        <td>Laki-laki</td>
-                        <td>02-10-2000</td>
-                        <td>Wonoyogo Gg.5 Buaran Pekalongan</td>
-                        <td>10-05-2025</td>
-                        <td>Karang Gigi, Gusi Sakit, Gigi berlubang</td>
-                        <td>
-                          <button class="btn btn-success">Detail</button>&nbsp;
-                          <button class="btn btn-primary">edit</button>&nbsp;
-                          <button class="btn btn-danger">delete</button>
-                        </td>
-                      </tr>
+                    <tbody id="table-body">
                     </tbody>
                   </table>
                 </div>
               </div>
               <div class="card-footer clearfix">
-                <ul class="pagination pagination-sm m-0 float-end">
+                <div id="page-info" class="float-start">
+                  Page 1 of 1
+                </div>
+                <ul id="pagination" class="pagination pagination-sm m-0 float-end">
                   <li class="page-item"><a class="page-link" href="#">&laquo;</a></li>
                   <li class="page-item"><a class="page-link" href="#">1</a></li>
                   <li class="page-item"><a class="page-link" href="#">2</a></li>
@@ -114,5 +88,18 @@
     <!--end::App Content-->
   </main>
   <!--end::App Main-->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('filter-btn').addEventListener('click', async () => {
+        startDate = document.getElementById('start-date').value
+        endDate = document.getElementById('end-date').value
+        currentPage = 1
+        fetchData(currentPage)
+      })
+
+      fetchData(currentPage)
+    })
+  </script>
 
   <%- include('partials/footer') %>

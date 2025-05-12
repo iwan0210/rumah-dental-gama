@@ -1,0 +1,143 @@
+<%- include('partials/header') %>
+
+    <!--begin::App Main-->
+    <main class="app-main">
+        <!--begin::App Content Header-->
+        <div class="app-content-header">
+            <!--begin::Container-->
+            <div class="container-fluid">
+                <!--begin::Row-->
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h3 class="mb-0">Tambah Data</h3>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-end">
+                            <li class="breadcrumb-item"><a href="#">Tambah Data</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                        </ol>
+                    </div>
+
+                    <!--begin::table-->
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Tambah Data Pasien</h3>
+                            </div>
+                            <div class="card-body p-0 m-3">
+                                <form id="add-data-form">
+                                    <div class="row">
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="name" class="form-label">Nama</label>
+                                            <input type="text" class="form-control" id="name" placeholder="Nama"
+                                                required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="nik" class="form-label">NIK</label>
+                                            <input type="text" class="form-control" id="nik" placeholder="NIK" required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="alamat" class="form-label">Alamat</label>
+                                            <input type="text" class="form-control" id="alamat" placeholder="Alamat"
+                                                required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="telepon" class="form-label">Nomor Telepon</label>
+                                            <input type="text" class="form-control" id="telepon"
+                                                placeholder="Nomor Telepon" required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="tanggal-lahir" class="form-label">Tanggal Lahir</label>
+                                            <input type="date" class="form-control" id="tanggal-lahir" required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="jenis-kelamin" class="form-label">Jenis Kelamin</label>
+                                            <select class="form-select" id="jenis-kelamin" required>
+                                                <option value="" disabled selected>Pilih Jenis Kelamin</option>
+                                                <option value="Laki-laki">Laki-laki</option>
+                                                <option value="Perempuan">Perempuan</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="tanggal-periksa" class="form-label">Tanggal Periksa</label>
+                                            <div class="input-group">
+                                                <input type="date" class="form-control" id="tanggal-periksa" required>
+                                                <button class="btn btn-secondary" id="today-btn" type="button"
+                                                    onclick="today()">Hari Ini</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="keluhan" class="form-label">Keluhan</label>
+                                            <textarea class="form-control" id="keluhan" rows="3" placeholder="Keluhan"
+                                                required></textarea>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="diagnosa" class="form-label">Diagnosa</label>
+                                            <textarea class="form-control" id="diagnosa" rows="3"
+                                                placeholder="Diagnosa"></textarea>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="tindakan" class="form-label">Tindakan</label>
+                                            <textarea class="form-control" id="tindakan" rows="3"
+                                                placeholder="Tindakan"></textarea>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="obat" class="form-label">obat</label>
+                                            <textarea class="form-control" id="obat" rows="3"
+                                                placeholder="Obat"></textarea>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="biaya" class="form-label">Biaya</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">Rp</span>
+                                                <input type="text" class="form-control no-arrows" id="biaya"
+                                                    placeholder="Biaya" required>
+                                            </div>
+
+                                        </div>
+                                </form>
+                            </div>
+                            <div class="card-footer clearfix">
+                                <div class="float-start">
+                                    <Button class="btn btn-danger" onclick="clearForm()">Kosongkan</Button>
+                                    <Button class="btn btn-primary" type="submit" form="add-data-form">Simpan</Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::table-->
+
+                </div>
+                <!--end::Row-->
+            </div>
+            <!--end::Container-->
+        </div>
+        <!--end::App Content Header-->
+        <!--begin::App Content-->
+        <div class="app-content">
+            <!--begin::Container-->
+            <div class="container-fluid">
+
+            </div>
+            <!--end::Container-->
+        </div>
+        <!--end::App Content-->
+    </main>
+    <!--end::App Main-->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const inputBiaya = document.getElementById('biaya')
+
+            inputBiaya.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/[^\d]/g, '');  // Remove non-numeric characters
+                if (value) {
+                    // Format with commas as the user types
+                    e.target.value = new Intl.NumberFormat('en-US').format(value);
+                }
+            })
+        })
+
+    </script>
+
+    <%- include('partials/footer') %>
