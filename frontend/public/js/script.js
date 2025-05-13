@@ -148,26 +148,75 @@ const today = () => {
 
 const clearForm = () => {
     document.getElementById('add-data-form').reset()
+
+    document.getElementById('name').value = ''
+    document.getElementById('nik').value = ''
+    document.getElementById('alamat').value = ''
+    document.getElementById('telepon').value = ''
+    document.getElementById('tanggal-lahir').value = ''
+    document.getElementById('jenis-kelamin').value = ''
+    document.getElementById('tanggal-periksa').value = ''
+    document.getElementById('keluhan').value = ''
+    document.getElementById('diagnosa').value = ''
+    document.getElementById('tindakan').value = ''
+    document.getElementById('obat').value = ''
+    document.getElementById('biaya').value = ''
 }
 
 const insertData = async () => {
     const data = {
-    nama: document.getElementById('name').value.trim(),
-    nik: document.getElementById('nik').value.trim(),
-    alamat: document.getElementById('alamat').value.trim(),
-    nohp: document.getElementById('telepon').value.trim(),
-    tglLahir: document.getElementById('tanggal-lahir').value,
-    jk: document.getElementById('jenis-kelamin').value,
-    tanggalDaftar: document.getElementById('tanggal-periksa').value,
-    keluhan: document.getElementById('keluhan').value.trim(),
-    diagnosa: document.getElementById('diagnosa').value.trim(),
-    tindakan: document.getElementById('tindakan').value.trim(),
-    obat: document.getElementById('obat').value.trim(),
-    total: document.getElementById('biaya').value.replace(/[^\d]/g, '')
+        nama: document.getElementById('name').value.trim(),
+        nik: document.getElementById('nik').value.trim(),
+        alamat: document.getElementById('alamat').value.trim(),
+        nohp: document.getElementById('telepon').value.trim(),
+        tglLahir: document.getElementById('tanggal-lahir').value,
+        jk: document.getElementById('jenis-kelamin').value,
+        tanggalDaftar: document.getElementById('tanggal-periksa').value,
+        keluhan: document.getElementById('keluhan').value.trim(),
+        diagnosa: document.getElementById('diagnosa').value.trim(),
+        tindakan: document.getElementById('tindakan').value.trim(),
+        obat: document.getElementById('obat').value.trim(),
+        total: document.getElementById('biaya').value.replace(/[^\d]/g, '')
     };
 
     try {
         const response = await axios.post('/api/register/complete', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        clearForm();
+
+        window.location = '/admin/'
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        alert('Gagal menyimpan data. Silakan coba lagi.');
+    }
+}
+
+const editRegister = registerId => {
+    window.location = '/admin/edit/' + registerId
+}
+
+const updateData = async (id) => {
+    const data = {
+        nama: document.getElementById('name').value.trim(),
+        nik: document.getElementById('nik').value.trim(),
+        alamat: document.getElementById('alamat').value.trim(),
+        nohp: document.getElementById('telepon').value.trim(),
+        tglLahir: document.getElementById('tanggal-lahir').value,
+        jk: document.getElementById('jenis-kelamin').value,
+        tanggalDaftar: document.getElementById('tanggal-periksa').value,
+        keluhan: document.getElementById('keluhan').value.trim(),
+        diagnosa: document.getElementById('diagnosa').value.trim(),
+        tindakan: document.getElementById('tindakan').value.trim(),
+        obat: document.getElementById('obat').value.trim(),
+        total: document.getElementById('biaya').value.replace(/[^\d]/g, '')
+    };
+
+    try {
+        const response = await axios.post('/api/register/'+id, data, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
