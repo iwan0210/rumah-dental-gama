@@ -10,6 +10,7 @@ class RegisterHandler {
         this.updateRegisterByIdHandler = this.updateRegisterByIdHandler.bind(this)
         this.postCompleteRegisterHandler = this.postCompleteRegisterHandler.bind(this)
         this.getRegisterByNikHandler = this.getRegisterByNikHandler.bind(this)
+        this.getFinanceByYearHandler = this.getFinanceByYearHandler.bind(this)
     }
 
     async postRegisterHandler(req, res, next) {
@@ -129,6 +130,22 @@ class RegisterHandler {
         try {
             const { nik } = req.params
             const result = await this._service.getPatientByNik(nik)
+            const response = {
+                error: false,
+                status: 200,
+                message: 'Success',
+                data: result
+            }
+            res.status(200).json(response)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async getFinanceByYearHandler(req, res, next) {
+        try {
+            const { year } = req.params
+            const result = await this._service.getFinanceByYear(year)
             const response = {
                 error: false,
                 status: 200,

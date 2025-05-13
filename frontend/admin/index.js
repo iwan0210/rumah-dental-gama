@@ -3,14 +3,18 @@ const router = require('express').Router()
 const RegisterService = require('../../backend/services/RegisterService')
 const registerService = new RegisterService()
 
+const getCurrentDateInWIB = () => {
+    const wib = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    return wib.getFullYear() + '-' + String(wib.getMonth() + 1).padStart(2, '0') + '-' + String(wib.getDate()).padStart(2, '0');
+}
+
 router.get('/', async (_, res) => {
     try {
-        const today = new Date();
-        const defaultDate = today.toISOString().split('T')[0];
+        const defaultDate = getCurrentDateInWIB()
         const data = await registerService.getStatistics()
         res.render('home', { title: 'Home', defaultDate, ...data })
     } catch (error) {
-        res.status(404).render(404, { title: 'Error'})
+        res.status(404).render(404, { title: 'Error' })
     }
 })
 
@@ -19,7 +23,7 @@ router.get('/finance', async (_, res) => {
         const data = await registerService.getFinance()
         res.render('finance', { title: 'Keuangan', ...data })
     } catch (error) {
-        res.status(404).render(404, { title: 'Error'})
+        res.status(404).render(404, { title: 'Error' })
     }
 })
 
@@ -32,7 +36,7 @@ router.get('/edit/:id', async (req, res) => {
         const data = await registerService.getRegisterById(req.params.id)
         res.render('edit-data', { title: 'Edit Data', ...data })
     } catch (error) {
-        res.status(404).render(404, { title: 'Error'})
+        res.status(404).render(404, { title: 'Error' })
     }
 })
 

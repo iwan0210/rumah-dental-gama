@@ -17,68 +17,76 @@
               <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
             </ol>
           </div>
-        <!-- Info boxes -->
-        <div class="row">
-          <div class="col-12 col-sm-6 col-md-3">
-            <div class="info-box">
-              <span class="info-box-icon text-bg-primary shadow-sm">
-                <i class="bi bi-bar-chart-fill"></i>
-              </span>
-              <div class="info-box-content">
-                <span class="info-box-text">Pasien Hari Ini</span>
-                <span class="info-box-number"><%= today.toLocaleString() %></span>
+          <!-- Info boxes -->
+          <div class="row">
+            <div class="col-12 col-sm-6 col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon text-bg-primary shadow-sm">
+                  <i class="bi bi-bar-chart-fill"></i>
+                </span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Pasien Hari Ini</span>
+                  <span class="info-box-number">
+                    <%= today.toLocaleString() %>
+                  </span>
+                </div>
+                <!-- /.info-box-content -->
               </div>
-              <!-- /.info-box-content -->
+              <!-- /.info-box -->
             </div>
-            <!-- /.info-box -->
-          </div>
-          <div class="col-12 col-sm-6 col-md-3">
-            <div class="info-box">
-              <span class="info-box-icon text-bg-success shadow-sm">
-                <i class="bi bi-bar-chart-fill"></i>
-              </span>
-              <div class="info-box-content">
-                <span class="info-box-text">Pasien Minggu Ini</span>
-                <span class="info-box-number"><%= thisWeek.toLocaleString() %></span>
+            <div class="col-12 col-sm-6 col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon text-bg-success shadow-sm">
+                  <i class="bi bi-bar-chart-fill"></i>
+                </span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Pasien Minggu Ini</span>
+                  <span class="info-box-number">
+                    <%= thisWeek.toLocaleString() %>
+                  </span>
+                </div>
+                <!-- /.info-box-content -->
               </div>
-              <!-- /.info-box-content -->
+              <!-- /.info-box -->
             </div>
-            <!-- /.info-box -->
-          </div>
-          <!-- /.col -->
-          <div class="col-12 col-sm-6 col-md-3">
-            <div class="info-box">
-              <span class="info-box-icon text-bg-warning shadow-sm">
-                <i class="bi bi-bar-chart-fill"></i>
-              </span>
-              <div class="info-box-content">
-                <span class="info-box-text">Pasien Bulan Ini</span>
-                <span class="info-box-number"><%= thisMonth.toLocaleString() %></span>
+            <!-- /.col -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon text-bg-warning shadow-sm">
+                  <i class="bi bi-bar-chart-fill"></i>
+                </span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Pasien Bulan Ini</span>
+                  <span class="info-box-number">
+                    <%= thisMonth.toLocaleString() %>
+                  </span>
+                </div>
+                <!-- /.info-box-content -->
               </div>
-              <!-- /.info-box-content -->
+              <!-- /.info-box -->
             </div>
-            <!-- /.info-box -->
-          </div>
-          <!-- /.col -->
-          <!-- fix for small devices only -->
-          <!-- <div class="clearfix hidden-md-up"></div> -->
-          <div class="col-12 col-sm-6 col-md-3">
-            <div class="info-box">
-              <span class="info-box-icon text-bg-danger shadow-sm">
-                <i class="bi bi-bar-chart-fill"></i>
-              </span>
-              <div class="info-box-content">
-                <span class="info-box-text">Total Pasien</span>
-                <span class="info-box-number"><%= total.toLocaleString() %></span>
+            <!-- /.col -->
+            <!-- fix for small devices only -->
+            <!-- <div class="clearfix hidden-md-up"></div> -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon text-bg-danger shadow-sm">
+                  <i class="bi bi-bar-chart-fill"></i>
+                </span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Total Pasien</span>
+                  <span class="info-box-number">
+                    <%= total.toLocaleString() %>
+                  </span>
+                </div>
+                <!-- /.info-box-content -->
               </div>
-              <!-- /.info-box-content -->
+              <!-- /.info-box -->
             </div>
-            <!-- /.info-box -->
+            <!-- /.col -->
           </div>
-          <!-- /.col -->
-        </div>
-        <!--begin::Row-->
-        
+          <!--begin::Row-->
+
 
           <!--begin::table-->
           <div class="col-lg-12">
@@ -90,7 +98,7 @@
                     <input class="form-control" type="date" id="start-date" value="<%= defaultDate %>">
                     <span class="input-group-text">s/d</span>
                     <input class="form-control" type="date" id="end-date" value="<%= defaultDate %>">
-                    <button class="btn btn-warning" id="filter-btn" type=" button">Filter</button>
+                    <button class="btn btn-warning" id="filter-btn" type="button">Filter</button>
                   </div>
                 </div>
               </div>

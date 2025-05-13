@@ -10,7 +10,7 @@ class RegisterClass {
     async register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan) {
 
         const id = nanoid(32)
-        await this._pool.query("INSERT INTO registrasi (id, nama, nik, jk, tgl_lahir, alamat, nohp, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        await this._pool.query("INSERT INTO registrasi (id, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [id, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan])
 
         return id
@@ -90,16 +90,16 @@ class RegisterClass {
     }
 
     async getFinance() {
-        const [result] = await this._pool.query("SELECT SUM(total) as total FROM registrasi")
+        const [result] = await this._pool.query("SELECT COALESCE(SUM(total), 0) as total FROM registrasi")
         const total = result[0].total
 
-        const [today] = await this._pool.query("SELECT SUM(total) as total FROM registrasi WHERE DATE(tanggal) = CURDATE()")
+        const [today] = await this._pool.query("SELECT COALESCE(SUM(total), 0) as total FROM registrasi WHERE DATE(tanggal) = CURDATE()")
         const todayCount = today[0].total
 
-        const [thisWeek] = await this._pool.query("SELECT SUM(total) as total FROM registrasi WHERE WEEK(tanggal) = WEEK(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())")
+        const [thisWeek] = await this._pool.query("SELECT COALESCE(SUM(total), 0) as total FROM registrasi WHERE WEEK(tanggal) = WEEK(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())")
         const thisWeekCount = thisWeek[0].total
 
-        const [thisMonth] = await this._pool.query("SELECT SUM(total) as total FROM registrasi WHERE MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())")
+        const [thisMonth] = await this._pool.query("SELECT COALESCE(SUM(total), 0) as total FROM registrasi WHERE MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())")
         const thisMonthCount = thisMonth[0].total
 
         return {
@@ -118,6 +118,26 @@ class RegisterClass {
         }
 
         return result[0]
+    }
+
+    async getFinanceByYear(year) {
+        const [result] = await this._pool.query(`
+            SELECT 
+                YEAR(tanggal) AS tahun,
+                MONTHNAME(tanggal) AS bulan,
+                COUNT(*) AS jumlah_pasien,
+                SUM(total) AS total
+            FROM registrasi
+            WHERE total IS NOT NULL AND YEAR(tanggal) = ?
+            GROUP BY tahun, MONTH(tanggal)
+            ORDER BY MONTH(tanggal)
+      `, [year])
+
+        if (result.length < 1) {
+            throw new NotFoundError(`Data keuangan tahun ${year} tidak ditemukan`)
+        }
+
+        return result
     }
 }
 

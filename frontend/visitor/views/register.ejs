@@ -79,7 +79,7 @@
       <div class="row g-2">
         <div class="col-4">
           <select class="form-select" id="lahirTanggal" required>
-            <option value="">Tanggal</option>
+            <option value="" disabled selected>Tanggal</option>
             <script>
               for (let i = 1; i <= 31; i++) {
                 document.write(`<option value="${i}">${i}</option>`);
@@ -89,7 +89,7 @@
         </div>
         <div class="col-4">
           <select class="form-select" id="lahirBulan" required>
-            <option value="">Bulan</option>
+            <option value="" disabled selected>Bulan</option>
             <option value="1">Januari</option>
             <option value="2">Februari</option>
             <option value="3">Maret</option>
@@ -106,7 +106,7 @@
         </div>
         <div class="col-4">
           <select class="form-select" id="lahirTahun" required>
-            <option value="">Tahun</option>
+            <option value="" disabled selected>Tahun</option>
             <script>
               const thisYear = new Date().getFullYear();
               for (let i = thisYear; i >= 1900; i--) {

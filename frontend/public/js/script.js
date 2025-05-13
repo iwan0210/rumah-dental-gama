@@ -1,6 +1,11 @@
+const getCurrentDateInWIB = () => {
+    const wib = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    return wib.getFullYear() + '-' + String(wib.getMonth() + 1).padStart(2, '0') + '-' + String(wib.getDate()).padStart(2, '0');
+}
+
 const token = localStorage.getItem('accessToken')
-let startDate = new Date().toISOString().split('T')[0]
-let endDate = new Date().toISOString().split('T')[0]
+let startDate = getCurrentDateInWIB()
+let endDate = getCurrentDateInWIB()
 let currentPage = 1
 const limit = 10
 let listData = []
@@ -145,7 +150,7 @@ const logout = () => {
 }
 
 const today = () => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getCurrentDateInWIB()
 
     document.getElementById('tanggal-periksa').value = today
 }
@@ -326,7 +331,7 @@ const printRegister = id => {
             <tr><td class="label">NIK</td><td>:</td><td class="value">${item.nik}</td></tr>
             <tr><td class="label">Alamat</td><td>:</td><td class="value">${item.alamat}</td></tr>
             <tr><td class="label">No HP</td><td>:</td><td class="value">${item.nohp}</td></tr>
-            <tr><td class="label">Tgl Daftar</td><td>:</td><td class="value">${item.tanggal}</td></tr>
+            <tr><td class="label">Tgl Periksa</td><td>:</td><td class="value">${item.tanggal}</td></tr>
             <tr><td class="label">Tindakan</td><td>:</td><td class="value">${tindakan}</td></tr>
             <tr><td class="label">Obat</td><td>:</td><td class="value">${obat}</td></tr>
         </table>
@@ -370,5 +375,48 @@ const searchPatient = async () => {
         document.getElementById('jenis-kelamin').value = data.jk
     } catch (error) {
         alert('Error fetching data. Please try again later.')
+    }
+}
+
+const fetchFinance = async () => {
+    const selectedYear = document.getElementById('select-year').value.trim()
+    try {
+        const response = await axios.get('/api/register/finance/' + selectedYear, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const { data } = response.data
+
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+        data.forEach((item, index) => {
+            const row = document.createElement('tr')
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${item.tahun}</td>
+                <td>${item.bulan}</td>
+                <td>${item.jumlah_pasien}</td>
+                <td>Rp ${item.total.toLocaleString('id-ID')}</td>
+            `
+            tableBody.appendChild(row)
+        })
+        const row = document.createElement('tr')
+        row.innerHTML = `
+            <td colspan="3" class="text-center">Total</td>
+            <td>${data.reduce((acc, item) => acc + item.jumlah_pasien, 0)}</td>
+            <td>Rp ${data.reduce((acc, item) => acc + item.total, 0).toLocaleString('id-ID')}</td>
+        `
+        tableBody.appendChild(row)
+    } catch (error) {
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+        const row = document.createElement('tr')
+        row.innerHTML = `
+            <td colspan="5" class="text-center">Data tidak ditemukan</td>
+        `
+        tableBody.appendChild(row)
+        console.error('Error fetching data:', error)
     }
 }
