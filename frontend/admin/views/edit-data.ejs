@@ -29,17 +29,18 @@
                                     <div class="row">
                                         <div class="col-sm-6 mb-3">
                                             <label for="name" class="form-label">Nama</label>
-                                            <input type="text" class="form-control" id="name" placeholder="Nama" value="<%= nama %>"
-                                                required>
+                                            <input type="text" class="form-control" id="name" placeholder="Nama"
+                                                value="<%= nama %>" required>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="nik" class="form-label">NIK</label>
-                                            <input type="text" class="form-control" id="nik" placeholder="NIK" value="<%= nik %>" required>
+                                            <input type="text" class="form-control" id="nik" placeholder="NIK"
+                                                value="<%= nik %>" required>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="alamat" class="form-label">Alamat</label>
-                                            <input type="text" class="form-control" id="alamat" placeholder="Alamat" value="<%= alamat %>"
-                                                required>
+                                            <input type="text" class="form-control" id="alamat" placeholder="Alamat"
+                                                value="<%= alamat %>" required>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="telepon" class="form-label">Nomor Telepon</label>
@@ -48,48 +49,53 @@
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="tanggal-lahir" class="form-label">Tanggal Lahir</label>
-                                            <input type="date" class="form-control" id="tanggal-lahir" value="<%= tgl_lahir %>" required>
+                                            <input type="date" class="form-control" id="tanggal-lahir"
+                                                value="<%= tgl_lahir %>" required>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="jenis-kelamin" class="form-label">Jenis Kelamin</label>
                                             <select class="form-select" id="jenis-kelamin" required>
-                                                <option value="L">Laki-laki</option>
-                                                <option value="P">Perempuan</option>
+                                                <option value="L" <%= jk==='L' ? 'selected' : '' %>
+                                                    >Laki-laki</option>
+                                                <option value="P" <%= jk==='P' ? 'selected' : '' %>
+                                                    >Perempuan</option>
                                             </select>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="tanggal-periksa" class="form-label">Tanggal Periksa</label>
                                             <div class="input-group">
-                                                <input type="date" class="form-control" id="tanggal-periksa" value="<%= tanggal %>" required>
+                                                <input type="date" class="form-control" id="tanggal-periksa"
+                                                    value="<%= tanggal %>" required>
                                                 <button class="btn btn-secondary" id="today-btn" type="button"
                                                     onclick="today()">Hari Ini</button>
                                             </div>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="keluhan" class="form-label">Keluhan</label>
-                                            <textarea class="form-control" id="keluhan" rows="3" placeholder="Keluhan" value="<%= keluhan %>"
-                                                required></textarea>
+                                            <textarea class="form-control" id="keluhan" rows="3" placeholder="Keluhan"
+                                                required><%= keluhan %></textarea>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="diagnosa" class="form-label">Diagnosa</label>
-                                            <textarea class="form-control" id="diagnosa" rows="3" value="<%= diagnosa %>"
-                                                placeholder="Diagnosa"></textarea>
+                                            <textarea class="form-control" id="diagnosa" rows="3"
+                                                placeholder="Diagnosa"><%= diagnosa %></textarea>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="tindakan" class="form-label">Tindakan</label>
-                                            <textarea class="form-control" id="tindakan" rows="3" value="<%= tindakan %>"
-                                                placeholder="Tindakan"></textarea>
+                                            <textarea class="form-control" id="tindakan" rows="3"
+                                                placeholder="Tindakan"><%= tindakan %></textarea>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="obat" class="form-label">obat</label>
-                                            <textarea class="form-control" id="obat" rows="3" value="<%= obat %>"
-                                                placeholder="Obat"></textarea>
+                                            <textarea class="form-control" id="obat" rows="3"
+                                                placeholder="Obat"><%= obat %></textarea>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="biaya" class="form-label">Biaya</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">Rp</span>
-                                                <input type="text" class="form-control no-arrows" id="biaya" value="<%= new Intl.NumberFormat('id-ID').format(total) %>"
+                                                <input type="text" class="form-control no-arrows" id="biaya"
+                                                    value="<%= new Intl.NumberFormat('id-ID').format(total) %>"
                                                     placeholder="Biaya" required>
                                             </div>
 

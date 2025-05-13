@@ -9,6 +9,7 @@ const registerHandler = new RegisterHandler(registerService, RegisterValidator)
 
 router.post('/', registerHandler.postRegisterHandler)
 router.get('/', verifyToken, registerHandler.getAllRegisterHandler)
+router.get('/patient/:nik', verifyToken, registerHandler.getRegisterByNikHandler)
 router.post('/complete', verifyToken, registerHandler.postCompleteRegisterHandler)
 router.get('/:id', verifyToken, registerHandler.getRegisterByIdHandler)
 router.delete('/:id', verifyToken, registerHandler.deleteRegisterByIdHandler)

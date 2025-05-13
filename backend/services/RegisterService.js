@@ -67,6 +67,58 @@ class RegisterClass {
             throw new NotFoundError(`Register dengan id ${id} tidak ditemukan`)
         }
     }
+
+    async getStatistics() {
+        const [result] = await this._pool.query("SELECT COUNT(*) as total FROM registrasi")
+        const total = result[0].total
+
+        const [today] = await this._pool.query("SELECT COUNT(*) as total FROM registrasi WHERE DATE(tanggal) = CURDATE()")
+        const todayCount = today[0].total
+
+        const [thisWeek] = await this._pool.query("SELECT COUNT(*) as total FROM registrasi WHERE WEEK(tanggal) = WEEK(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())")
+        const thisWeekCount = thisWeek[0].total
+
+        const [thisMonth] = await this._pool.query("SELECT COUNT(*) as total FROM registrasi WHERE MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())")
+        const thisMonthCount = thisMonth[0].total
+
+        return {
+            total,
+            today: todayCount,
+            thisWeek: thisWeekCount,
+            thisMonth: thisMonthCount
+        }
+    }
+
+    async getFinance() {
+        const [result] = await this._pool.query("SELECT SUM(total) as total FROM registrasi")
+        const total = result[0].total
+
+        const [today] = await this._pool.query("SELECT SUM(total) as total FROM registrasi WHERE DATE(tanggal) = CURDATE()")
+        const todayCount = today[0].total
+
+        const [thisWeek] = await this._pool.query("SELECT SUM(total) as total FROM registrasi WHERE WEEK(tanggal) = WEEK(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())")
+        const thisWeekCount = thisWeek[0].total
+
+        const [thisMonth] = await this._pool.query("SELECT SUM(total) as total FROM registrasi WHERE MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())")
+        const thisMonthCount = thisMonth[0].total
+
+        return {
+            total,
+            today: todayCount,
+            thisWeek: thisWeekCount,
+            thisMonth: thisMonthCount
+        }
+    }
+
+    async getPatientByNik(nik) {
+        const [result] = await this._pool.query("SELECT nama, jk, tgl_lahir, alamat, nohp FROM registrasi WHERE nik = ? order by tanggal desc limit 1", [nik])
+
+        if (result.length < 1) {
+            throw new NotFoundError(`Pasien dengan nik ${nik} tidak ditemukan`)
+        }
+
+        return result[0]
+    }
 }
 
 module.exports = RegisterClass

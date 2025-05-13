@@ -1,0 +1,120 @@
+<%- include('partials/header') %>
+
+
+  <!--begin::App Main-->
+  <main class="app-main">
+    <!--begin::App Content Header-->
+    <div class="app-content-header">
+      <!--begin::Container-->
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-6">
+            <h3 class="mb-0">Pendapatan</h3>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-end">
+              <li class="breadcrumb-item"><a href="#">Pendapatan</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+            </ol>
+          </div>
+          <!-- Info boxes -->
+          <div class="row">
+            <div class="col-12 col-sm-6 col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon text-bg-primary shadow-sm">
+                  <i class="bi bi-bar-chart-fill"></i>
+                </span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Pendapatan Hari Ini</span>
+                  <span class="info-box-number">
+                    Rp. <%= today.toLocaleString() %>
+                  </span>
+                </div>
+                <!-- /.info-box-content -->
+              </div>
+              <!-- /.info-box -->
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon text-bg-success shadow-sm">
+                  <i class="bi bi-bar-chart-fill"></i>
+                </span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Pendapatan Minggu Ini</span>
+                  <span class="info-box-number">
+                    Rp. <%= thisWeek.toLocaleString() %>
+                  </span>
+                </div>
+                <!-- /.info-box-content -->
+              </div>
+              <!-- /.info-box -->
+            </div>
+            <!-- /.col -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon text-bg-warning shadow-sm">
+                  <i class="bi bi-bar-chart-fill"></i>
+                </span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Pendapatan Bulan Ini</span>
+                  <span class="info-box-number">
+                    Rp. <%= thisMonth.toLocaleString() %>
+                  </span>
+                </div>
+                <!-- /.info-box-content -->
+              </div>
+              <!-- /.info-box -->
+            </div>
+            <!-- /.col -->
+            <!-- fix for small devices only -->
+            <!-- <div class="clearfix hidden-md-up"></div> -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon text-bg-danger shadow-sm">
+                  <i class="bi bi-bar-chart-fill"></i>
+                </span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Pendapatan Pasien</span>
+                  <span class="info-box-number">
+                    Rp. <%= total.toLocaleString() %>
+                  </span>
+                </div>
+                <!-- /.info-box-content -->
+              </div>
+              <!-- /.info-box -->
+            </div>
+            <!-- /.col -->
+          </div>
+          <!--begin::Row-->
+        </div>
+        <!--end::Row-->
+      </div>
+      <!--end::Container-->
+    </div>
+    <!--end::App Content Header-->
+    <!--begin::App Content-->
+    <div class="app-content">
+      <!--begin::Container-->
+      <div class="container-fluid">
+
+      </div>
+      <!--end::Container-->
+    </div>
+    <!--end::App Content-->
+  </main>
+  <!--end::App Main-->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('filter-btn').addEventListener('click', async () => {
+        startDate = document.getElementById('start-date').value
+        endDate = document.getElementById('end-date').value
+        currentPage = 1
+        fetchData(currentPage)
+      })
+
+      fetchData(currentPage)
+    })
+  </script>
+
+  <%- include('partials/footer') %>

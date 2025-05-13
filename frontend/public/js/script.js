@@ -3,6 +3,7 @@ let startDate = new Date().toISOString().split('T')[0]
 let endDate = new Date().toISOString().split('T')[0]
 let currentPage = 1
 const limit = 10
+let listData = []
 
 if (!token) {
     window.location.href = '/admin/login';
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     }
 
-    
+
 })
 
 const fetchData = async (page = 1) => {
@@ -46,6 +47,7 @@ const fetchData = async (page = 1) => {
         })
 
         const { data, pagination } = response.data
+        listData = data
         const tableBody = document.getElementById('table-body')
         tableBody.innerHTML = '' // Clear previous data
         data.forEach((item, index) => {
@@ -63,7 +65,9 @@ const fetchData = async (page = 1) => {
                 <td>${item.tanggal.split('T')[0]}</td>
                 <td>${item.keluhan}</td>
                 <td><button class="btn btn-primary" onclick="editRegister('${item.id}')">Edit</button>
-                <button class="btn btn-danger" onclick="deleteRegister('${item.id}')">Delete</button></td>
+                <button class="btn btn-danger" onclick="deleteRegister('${item.id}')">Delete</button>
+                ${item.total ? `<button class="btn btn-success" onclick="printRegister('${item.id}')">Print</button>` : ''}
+                </td>
             `
             tableBody.appendChild(row)
         })
@@ -180,7 +184,7 @@ const insertData = async () => {
     };
 
     try {
-        const response = await axios.post('/api/register/complete', data, {
+        await axios.post('/api/register/complete', data, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -216,7 +220,7 @@ const updateData = async (id) => {
     };
 
     try {
-        const response = await axios.post('/api/register/'+id, data, {
+        await axios.put('/api/register/' + id, data, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -228,5 +232,143 @@ const updateData = async (id) => {
     } catch (error) {
         console.error('Error submitting form:', error);
         alert('Gagal menyimpan data. Silakan coba lagi.');
+    }
+}
+
+const deleteRegister = async (id) => {
+    try {
+        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus data ini?");
+        if (confirmDelete) {
+            await axios.delete('/api/register/' + id, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            fetchData(currentPage)
+        }
+    } catch (error) {
+        console.error('Error deleting data:', error);
+        alert('Gagal menghapus data. Silakan coba lagi.');
+    }
+}
+
+const printRegister = id => {
+
+    const item = listData.find(item => item.id === id);
+    if (!item) {
+        alert('Data tidak ditemukan');
+        return;
+    }
+
+    const invoiceWindow = window.open('', '_blank');
+
+    invoiceWindow.onload = () => {
+        const doc = invoiceWindow.document;
+
+        // Build styles
+        const style = `
+        body {
+            font-family: monospace;
+            font-size: 12px;
+            width: 80mm;
+            padding: 5px;
+        }
+        .center {
+            text-align: center;
+        }
+        .line {
+            border-top: 1px dashed #000;
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+        .label {
+            width: 35%;
+        }
+        .value {
+            width: 65%;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+    `;
+
+        // Append <style> tag
+        const styleEl = doc.createElement('style');
+        styleEl.textContent = style;
+        doc.head.appendChild(styleEl);
+
+        // Format tindakan and obat with line breaks
+        const tindakan = (item.tindakan || '-').replace(/\n/g, '<br>');
+        const obat = (item.obat || '-').replace(/\n/g, '<br>');
+
+        // Set the body HTML content
+        doc.body.innerHTML = `
+        <div class="center">
+            <h3>Rumah Dental Gama</h3>
+            <div>Gg. Kasuari, Bogoran, Kauman, Kabupaten Batang</div>
+            <div>Telp: 0823-1454-1887</div>
+            <div class="line"></div>
+            <strong>INVOICE</strong>
+            <div>${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</div>
+        </div>
+        <div class="line"></div>
+        <table>
+            <tr><td class="label">Nama</td><td>:</td><td class="value">${item.nama}</td></tr>
+            <tr><td class="label">NIK</td><td>:</td><td class="value">${item.nik}</td></tr>
+            <tr><td class="label">Alamat</td><td>:</td><td class="value">${item.alamat}</td></tr>
+            <tr><td class="label">No HP</td><td>:</td><td class="value">${item.nohp}</td></tr>
+            <tr><td class="label">Tgl Daftar</td><td>:</td><td class="value">${item.tanggal}</td></tr>
+            <tr><td class="label">Tindakan</td><td>:</td><td class="value">${tindakan}</td></tr>
+            <tr><td class="label">Obat</td><td>:</td><td class="value">${obat}</td></tr>
+        </table>
+        <div class="line"></div>
+        <div class="total">Total: Rp ${Number(item.total).toLocaleString('id-ID')}</div>
+        <div class="line"></div>
+        <div class="center">-- Terima Kasih --</div>
+    `;
+
+        // Trigger print
+        invoiceWindow.focus();
+        invoiceWindow.print();
+
+        // Close after print
+        invoiceWindow.onafterprint = () => {
+            invoiceWindow.close();
+        };
+    };
+}
+
+const searchPatient = async () => {
+    const nik = document.getElementById('nik').value.trim()
+    if (nik.length < 16) {
+        alert('NIK tidak valid')
+        return
+    }
+
+    try {
+        const response = await axios.get('/api/register/patient/' + nik, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const { data } = response.data
+
+        document.getElementById('name').value = data.nama
+        document.getElementById('alamat').value = data.alamat
+        document.getElementById('telepon').value = data.nohp
+        document.getElementById('tanggal-lahir').value = data.tgl_lahir
+        document.getElementById('jenis-kelamin').value = data.jk
+    } catch (error) {
+        alert('Error fetching data. Please try again later.')
     }
 }

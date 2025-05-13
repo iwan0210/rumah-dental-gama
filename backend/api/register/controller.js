@@ -9,6 +9,7 @@ class RegisterHandler {
         this.deleteRegisterByIdHandler = this.deleteRegisterByIdHandler.bind(this)
         this.updateRegisterByIdHandler = this.updateRegisterByIdHandler.bind(this)
         this.postCompleteRegisterHandler = this.postCompleteRegisterHandler.bind(this)
+        this.getRegisterByNikHandler = this.getRegisterByNikHandler.bind(this)
     }
 
     async postRegisterHandler(req, res, next) {
@@ -119,6 +120,22 @@ class RegisterHandler {
                 }
             }
             res.status(201).json(response)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async getRegisterByNikHandler(req, res, next) {
+        try {
+            const { nik } = req.params
+            const result = await this._service.getPatientByNik(nik)
+            const response = {
+                error: false,
+                status: 200,
+                message: 'Success',
+                data: result
+            }
+            res.status(200).json(response)
         } catch (error) {
             next(error)
         }

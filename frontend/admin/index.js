@@ -3,10 +3,24 @@ const router = require('express').Router()
 const RegisterService = require('../../backend/services/RegisterService')
 const registerService = new RegisterService()
 
-router.get('/', (_, res) => {
-    const today = new Date();
-    const defaultDate = today.toISOString().split('T')[0];
-    res.render('home', { title: 'Home', defaultDate })
+router.get('/', async (_, res) => {
+    try {
+        const today = new Date();
+        const defaultDate = today.toISOString().split('T')[0];
+        const data = await registerService.getStatistics()
+        res.render('home', { title: 'Home', defaultDate, ...data })
+    } catch (error) {
+        res.status(404).render(404, { title: 'Error'})
+    }
+})
+
+router.get('/finance', async (_, res) => {
+    try {
+        const data = await registerService.getFinance()
+        res.render('finance', { title: 'Keuangan', ...data })
+    } catch (error) {
+        res.status(404).render(404, { title: 'Error'})
+    }
 })
 
 router.get('/add', (_, res) => {
@@ -16,7 +30,6 @@ router.get('/add', (_, res) => {
 router.get('/edit/:id', async (req, res) => {
     try {
         const data = await registerService.getRegisterById(req.params.id)
-        console.log(data)
         res.render('edit-data', { title: 'Edit Data', ...data })
     } catch (error) {
         res.status(404).render(404, { title: 'Error'})

@@ -34,7 +34,12 @@
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="nik" class="form-label">NIK</label>
-                                            <input type="text" class="form-control" id="nik" placeholder="NIK" required>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="nik" placeholder="NIK"
+                                                    required>
+                                                <button class="btn btn-secondary" id="nik-btn" type="button"
+                                                    onclick="searchPatient()">Cari pasien</button>
+                                            </div>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="alamat" class="form-label">Alamat</label>
