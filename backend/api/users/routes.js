@@ -12,6 +12,6 @@ router.get('/:id', verifyToken, usersHandler.getUserByIdHandler)
 
 router.post('/Auth', usersHandler.postUserLoginHandler)
 
-router.put('Auth/Password', verifyToken, usersHandler.putUserChangePasswordHandler)
+router.put('/Auth/Password', verifyToken, usersHandler.putUserChangePasswordHandler)
 
 module.exports = router

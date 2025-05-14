@@ -14,7 +14,8 @@ router.get('/', async (_, res) => {
         const data = await registerService.getStatistics()
         res.render('home', { title: 'Home', defaultDate, ...data })
     } catch (error) {
-        res.status(404).render(404, { title: 'Error' })
+        console.log(error)
+        res.status(404).render('500', { title: 'Error' })
     }
 })
 
@@ -23,7 +24,7 @@ router.get('/finance', async (_, res) => {
         const data = await registerService.getFinance()
         res.render('finance', { title: 'Keuangan', ...data })
     } catch (error) {
-        res.status(404).render(404, { title: 'Error' })
+        res.status(404).render('500', { title: 'Error' })
     }
 })
 
@@ -36,7 +37,7 @@ router.get('/edit/:id', async (req, res) => {
         const data = await registerService.getRegisterById(req.params.id)
         res.render('edit-data', { title: 'Edit Data', ...data })
     } catch (error) {
-        res.status(404).render(404, { title: 'Error' })
+        res.status(404).render('404', { title: 'Error' })
     }
 })
 
