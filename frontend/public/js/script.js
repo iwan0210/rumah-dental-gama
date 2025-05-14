@@ -9,6 +9,7 @@ let endDate = getCurrentDateInWIB()
 let currentPage = 1
 const limit = 10
 let listData = []
+const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
 if (!token) {
     window.location.href = '/admin/login';
@@ -34,7 +35,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     }
 
+    const toggle = document.getElementById('darkModeToggle')
+    const htmlTag = document.documentElement
 
+    const enableDark = () => {
+        htmlTag.setAttribute('data-bs-theme', 'dark')
+        localStorage.setItem('theme', 'dark')
+    }
+
+    const disableDark = () => {
+        htmlTag.setAttribute('data-bs-theme', 'light')
+        localStorage.setItem('theme', 'light')
+    }
+
+    if (localStorage.getItem('theme') == 'dark') {
+        enableDark()
+        if (toggle) toggle.checked = true
+    } else {
+        disableDark()
+    }
+
+    if (toggle) {
+        toggle.addEventListener('change', () => {
+        toggle.checked ? enableDark() : disableDark()
+      })
+    }
 })
 
 const fetchData = async (page = 1) => {
@@ -396,7 +421,7 @@ const fetchFinance = async () => {
             row.innerHTML = `
                 <td>${index + 1}</td>
                 <td>${item.tahun}</td>
-                <td>${item.bulan}</td>
+                <td>${bulan[item.bulan - 1]}</td>
                 <td>${item.jumlah_pasien}</td>
                 <td>Rp ${item.total.toLocaleString('id-ID')}</td>
             `

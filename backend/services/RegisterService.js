@@ -124,7 +124,7 @@ class RegisterClass {
         const [result] = await this._pool.query(`
             SELECT 
                 YEAR(tanggal) AS tahun,
-                MONTHNAME(tanggal) AS bulan,
+                MONTH(tanggal) AS bulan,
                 COUNT(*) AS jumlah_pasien,
                 SUM(total) AS total
             FROM registrasi
