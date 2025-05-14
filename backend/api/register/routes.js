@@ -3,9 +3,10 @@ const RegisterService = require('../../services/RegisterService')
 const RegisterValidator = require('../../validator/RegisterValidator')
 const RegisterHandler = require('./controller')
 const { verifyToken } = require('../../middleware/AuthHandler')
+const axios = require('axios')
 
 const registerService = new RegisterService()
-const registerHandler = new RegisterHandler(registerService, RegisterValidator)
+const registerHandler = new RegisterHandler(registerService, RegisterValidator, axios)
 
 router.post('/', registerHandler.postRegisterHandler)
 router.get('/', verifyToken, registerHandler.getAllRegisterHandler)

@@ -1,7 +1,8 @@
 class RegisterHandler {
-    constructor(service, validator) {
+    constructor(service, validator, axios) {
         this._service = service
         this._validator = validator
+        this._axios = axios
 
         this.postRegisterHandler = this.postRegisterHandler.bind(this)
         this.getAllRegisterHandler = this.getAllRegisterHandler.bind(this)
@@ -18,6 +19,9 @@ class RegisterHandler {
             const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan } = req.body
             this._validator.validateAddRegisterPayload(req.body)
             const id = await this._service.register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan)
+
+            await this._sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan)
+
             const response = {
                 error: false,
                 status: 201,
@@ -155,6 +159,36 @@ class RegisterHandler {
             res.status(200).json(response)
         } catch (error) {
             next(error)
+        }
+    }
+
+    async _sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan) {
+        const jenisKelamin = jk === 'L' ? 'Laki-laki' : 'Perempuan'
+        const message = `*🦷 Rumah Dental Gama - Pendaftaran Berhasil ✅*\n\n` +
+            `Halo *${nama}*,\n` +
+            `Terima kasih telah melakukan pendaftaran di *Rumah Dental Gama*.\n\n` +
+            `📅 *Tanggal Daftar:* ${tanggalDaftar}\n\n` +
+            `📌 *Data Anda:*\n` +
+            `• NIK: ${nik}\n` +
+            `• No. HP: ${nohp}\n` +
+            `• Jenis Kelamin: ${jenisKelamin}\n` +
+            `• Tanggal Lahir: ${tglLahir}\n` +
+            `• Alamat: ${alamat}\n` +
+            `• Keluhan: ${keluhan}\n\n` +
+            `🔗 *Detail Pendaftaran:*\n` +
+            `https://${process.env.HOST}/register/${id}\n\n` +
+            `🙏 *Mohon datang tepat waktu sesuai jadwal. Kami tunggu kehadiran Anda di Rumah Dental Gama.*`
+
+        try {
+            await this._axios.post('https://api.fonnte.com/send/', { target: nohp, message: message },
+                {
+                    headers: {
+                        Authorization: process.env.WHATSAPP_TOKEN
+                    }
+                }
+            )
+        } catch (error) {
+            console.error('Error sending WhatsApp message:', error)
         }
     }
 }
