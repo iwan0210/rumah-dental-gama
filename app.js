@@ -24,8 +24,7 @@ app.use('/api/users', usersRoutes, errorHandler)
 app.use('/', visitorRoutes)
 app.use('/admin', adminRoutes)
 
-app.get('/{*splat}',(req, res) => {
-    console.log('WildCard Hit:', req.originalUrl);
+app.get('/{*splat}',(_, res) => {
     res.status(404).render('404', { title: 'Error' })
 })
 

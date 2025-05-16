@@ -9,17 +9,19 @@ class RegisterClass {
 
     async register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan) {
 
-        const id = nanoid(32)
-        await this._pool.query("INSERT INTO registrasi (id, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [id, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan])
+        const id = nanoid(16)
+        const queueNumber = await this.getQueueNumber(tanggalDaftar)
+        await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [id, queueNumber, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan])
 
         return id
     }
 
     async insertCompleteRegister(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total) {
-        const id = nanoid(32)
-        await this._pool.query("INSERT INTO registrasi VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [id, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total])
+        const id = nanoid(16)
+        const queueNumber = await this.getQueueNumber(tanggalDaftar)
+        await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan, diagnosa, tindakan, obat, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [id, queueNumber, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total])
         return id
     }
 
@@ -138,6 +140,34 @@ class RegisterClass {
         }
 
         return result
+    }
+
+    async getQueueNumber(registerDate) {
+        const [result] = await this._pool.query("SELECT COUNT(id) as total FROM registrasi WHERE tanggal = ?", [registerDate])
+        const total = result[0].total
+
+        return total + 1
+    }
+
+    async getAllRegisterByYearMonth(year, month) {
+        const [result] = await this._pool.query(`SELECT 
+            id, nama, nik, jk, tgl_lahir, nohp, alamat, no_reg, tanggal,
+            keluhan, diagnosa, tindakan, obat,
+            IFNULL(total, 0) AS total
+        FROM registrasi 
+        WHERE YEAR(tanggal) = ? AND MONTH(tanggal) = ?
+        ORDER BY tanggal ASC, no_reg ASC`, [year, month])
+
+        if (result.length < 1) {
+            throw new NotFoundError(`Data registrasi tahun ${year} bulan ${month} tidak ditemukan`)
+        }
+
+        const rows = result.map(row => ({
+            ...row,
+            total: Number(row.total)
+        }))
+
+        return rows
     }
 }
 

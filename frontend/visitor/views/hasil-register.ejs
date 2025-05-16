@@ -9,7 +9,7 @@
 <body>
   <div class="container text-center mt-5">
     <h1 class="text-success">Pendaftaran Berhasil!</h1>
-    <p class="lead mt-3">Terima kasih, <strong><%= nama %></strong>, Anda telah berhasil mendaftar di Klinik Gigi Dental Gama.</p>
+    <p class="lead mt-3">Terima kasih, <strong><%= nama %></strong>, Anda telah berhasil mendaftar di Rumah Dental Gama.</p>
     
     <h4>Detail Pendaftaran</h4>
     <ul class="list-group mt-3">
@@ -19,6 +19,7 @@
       <li class="list-group-item"><strong>Alamat:</strong> <%= alamat %></li>
       <li class="list-group-item"><strong>Jenis Kelamin:</strong> <%= jk === 'L' ? 'Laki-laki' : 'Perempuan' %></li>
       <li class="list-group-item"><strong>Tanggal Lahir:</strong> <%= moment(tgl_lahir).format('DD-MM-YYYY') %></li>
+      <li class="list-group-item"><strong>Nomor Antrian:</strong> <%= no_reg %></li>
       <li class="list-group-item"><strong>Tanggal Periksa:</strong> <%= moment(tanggal).format('DD-MM-YYYY') %></li>
       <li class="list-group-item"><strong>Keluhan:</strong> <%= keluhan %></li>
       <li class="list-group-item"><strong>ID Pendaftaran:</strong> <code><%= id %></code></li>

@@ -12,6 +12,7 @@ class RegisterHandler {
         this.postCompleteRegisterHandler = this.postCompleteRegisterHandler.bind(this)
         this.getRegisterByNikHandler = this.getRegisterByNikHandler.bind(this)
         this.getFinanceByYearHandler = this.getFinanceByYearHandler.bind(this)
+        this.getAllRegisterByYearMonthHandler = this.getAllRegisterByYearMonthHandler.bind(this)
     }
 
     async postRegisterHandler(req, res, next) {
@@ -189,6 +190,25 @@ class RegisterHandler {
             )
         } catch (error) {
             console.error('Error sending WhatsApp message:', error)
+        }
+    }
+
+    async getAllRegisterByYearMonthHandler(req, res, next) {
+        try {
+            let { year, month } = req.query
+            const now = new Date()
+            year = year || now.getFullYear().toString()
+            month = month || (now.getMonth() + 1).toString().padStart(2, '0')
+            const result = await this._service.getAllRegisterByYearMonth(year, month)
+            const response = {
+                error: false,
+                status: 200,
+                message: 'Success',
+                data: result
+            }
+            res.status(200).json(response)
+        } catch (error) {
+            next(error)
         }
     }
 }

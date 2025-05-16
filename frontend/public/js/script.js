@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (toggle) {
         toggle.addEventListener('change', () => {
-        toggle.checked ? enableDark() : disableDark()
-      })
+            toggle.checked ? enableDark() : disableDark()
+        })
     }
 })
 
@@ -92,6 +92,7 @@ const fetchData = async (page = 1) => {
                 <td>${item.tgl_lahir.split('T')[0]} / ${age} Th</td>
                 <td>${item.alamat}</td>
                 <td>${item.nohp}</td>
+                <td>${item.no_reg}</td>
                 <td>${item.tanggal.split('T')[0]}</td>
                 <td>${item.keluhan}</td>
                 <td><button class="btn btn-primary" onclick="editRegister('${item.id}')">Edit</button>
@@ -440,6 +441,55 @@ const fetchFinance = async () => {
         const row = document.createElement('tr')
         row.innerHTML = `
             <td colspan="5" class="text-center">Data tidak ditemukan</td>
+        `
+        tableBody.appendChild(row)
+        console.error('Error fetching data:', error)
+    }
+}
+
+const fetchPatientReport = async () => {
+    const selectedYear = document.getElementById('select-year').value.trim()
+    const selectedMonth = document.getElementById('select-month').value.trim()
+
+    try {
+        const response = await axios.get('/api/register/patient', {
+            params: {
+                year: selectedYear,
+                month: selectedMonth
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const { data } = response.data
+
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+        data.forEach((item, index) => {
+            const row = document.createElement('tr')
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${selectedYear}</td>
+                <td>${bulan[selectedMonth - 1]}</td>
+                <td>${item.tanggal}</td>
+                <td>${item.nama}</td>
+                <td>Rp ${item.total.toLocaleString('id-ID')}</td>
+            `
+            tableBody.appendChild(row)
+        })
+        const row = document.createElement('tr')
+        row.innerHTML = `
+            <td colspan="5" class="text-center">Total</td>
+            <td>Rp ${data.reduce((acc, item) => acc + item.total, 0).toLocaleString('id-ID')}</td>
+        `
+        tableBody.appendChild(row)
+    } catch (error) {
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+        const row = document.createElement('tr')
+        row.innerHTML = `
+            <td colspan="8" class="text-center">Data tidak ditemukan</td>
         `
         tableBody.appendChild(row)
         console.error('Error fetching data:', error)

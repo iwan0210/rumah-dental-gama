@@ -1,5 +1,6 @@
 const router = require('express').Router()
 
+const { render } = require('ejs');
 const RegisterService = require('../../backend/services/RegisterService')
 const registerService = new RegisterService()
 
@@ -26,6 +27,10 @@ router.get('/finance', async (_, res) => {
     } catch (error) {
         res.status(404).render('500', { title: 'Error' })
     }
+})
+
+router.get('/patient', (_, res) => {
+    res.render('patient', { title: 'Rekap Pasien' })
 })
 
 router.get('/add', (_, res) => {
