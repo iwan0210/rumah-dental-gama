@@ -495,3 +495,45 @@ const fetchPatientReport = async () => {
         console.error('Error fetching data:', error)
     }
 }
+
+const exportExcel = async () => {
+    const selectedYear = document.getElementById('select-year').value.trim()
+    const selectedMonth = document.getElementById('select-month').value.trim()
+
+    try {
+        const response = await axios.get('/api/register/export', {
+            params: {
+                year: selectedYear,
+                month: selectedMonth
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            responseType: 'blob'
+        })
+
+        const disposition = response.headers['content-disposition']
+
+        let fileName = `rekap_pasien_${selectedYear}_${selectedMonth}.xlsx`
+
+        if (disposition && disposition.includes('filename=')) {
+            const fileNameMatch = disposition.match(/filename="?([^"]+)"?/);
+            if (fileNameMatch && fileNameMatch.length > 1) {
+                fileName = fileNameMatch[1].trim();
+            }
+        }
+
+        const url = window.URL.createObjectURL(response.data)
+
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+
+        a.remove()
+        window.URL.revokeObjectURL(url)
+    } catch (error) {
+        alert('Error fetching data. Please try again later.')
+    }
+}

@@ -44,6 +44,7 @@
                           <% } %>
                     </select>
                     <button class="btn btn-warning" id="filter-btn" type="button">Filter</button>
+                    <button class="btn btn-success" id="export-btn" type="button">Excel</button>
                   </div>
                 </div>
               </div>
@@ -89,13 +90,17 @@
   <!--end::App Main-->
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async () => {
 
       document.getElementById('filter-btn').addEventListener('click', async () => {
-        fetchPatientReport()
+        await fetchPatientReport()
       })
 
-      fetchPatientReport()
+      document.getElementById('export-btn').addEventListener('click', async () => {
+        await exportExcel()
+      })
+
+      await fetchPatientReport()
     })
   </script>
 

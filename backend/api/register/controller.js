@@ -1,8 +1,9 @@
 class RegisterHandler {
-    constructor(service, validator, axios) {
+    constructor(service, validator, axios, ExcelJS) {
         this._service = service
         this._validator = validator
         this._axios = axios
+        this._ExcelJS = ExcelJS
 
         this.postRegisterHandler = this.postRegisterHandler.bind(this)
         this.getAllRegisterHandler = this.getAllRegisterHandler.bind(this)
@@ -13,6 +14,7 @@ class RegisterHandler {
         this.getRegisterByNikHandler = this.getRegisterByNikHandler.bind(this)
         this.getFinanceByYearHandler = this.getFinanceByYearHandler.bind(this)
         this.getAllRegisterByYearMonthHandler = this.getAllRegisterByYearMonthHandler.bind(this)
+        this.getExportExcel = this.getExportExcel.bind(this)
     }
 
     async postRegisterHandler(req, res, next) {
@@ -207,6 +209,109 @@ class RegisterHandler {
                 data: result
             }
             res.status(200).json(response)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async getExportExcel(req, res, next) {
+        try {
+            let { year, month } = req.query
+            const now = new Date()
+            year = year || now.getFullYear().toString()
+            month = month || (now.getMonth() + 1).toString().padStart(2, '0')
+            const data = await this._service.getAllRegisterByYearMonth(year, month)
+
+            const workbook = new this._ExcelJS.Workbook()
+            const worksheet = workbook.addWorksheet('Rekap Pasien')
+
+            worksheet.columns = [
+            { header: 'No', key: 'no', width: 5 },
+            { header: 'ID', key: 'id', width: 10 },
+            { header: 'No Reg', key: 'no_reg', width: 15 },
+            { header: 'Nama', key: 'nama', width: 25 },
+            { header: 'NIK', key: 'nik', width: 20 },
+            { header: 'JK', key: 'jk', width: 10 },
+            { header: 'Tanggal Lahir', key: 'tgl_lahir', width: 20 },
+            { header: 'No HP', key: 'nohp', width: 15 },
+            { header: 'Alamat', key: 'alamat', width: 30 },
+            { header: 'Tanggal', key: 'tanggal', width: 20 },
+            { header: 'Keluhan', key: 'keluhan', width: 25 },
+            { header: 'Diagnosa', key: 'diagnosa', width: 25 },
+            { header: 'Tindakan', key: 'tindakan', width: 25 },
+            { header: 'Obat', key: 'obat', width: 25 },
+            { header: 'Total', key: 'total', width: 15 },
+            ]
+
+            worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }
+            worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF1F497D' },
+            }
+            worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' }
+            worksheet.getRow(1).height = 20
+
+            data.forEach((item, index) => {
+            worksheet.addRow({
+                no: index + 1,
+                ...item,
+            })
+            })
+
+            const totalRows = data.length + 1
+
+            for (let i = 1; i <= totalRows; i++) {
+            const row = worksheet.getRow(i)
+            row.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
+
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.border = {
+                top: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                left: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                right: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                }
+            })
+            }
+
+            const startRow = 2
+            const endRow = data.length + 1
+            const totalColIndex = 15
+
+            const totalRow = worksheet.addRow([])
+
+            totalRow.getCell(totalColIndex - 1).value = 'Total'
+            totalRow.getCell(totalColIndex - 1).font = { bold: true }
+            totalRow.getCell(totalColIndex - 1).alignment = { horizontal: 'right' }
+
+            totalRow.getCell(totalColIndex).value = {
+            formula: `SUM(O${startRow}:O${endRow})`,
+            result: data.reduce((sum, item) => sum + (item.total || 0), 0),
+            }
+            totalRow.getCell(totalColIndex).font = { bold: true }
+            totalRow.getCell(totalColIndex).numFmt = '#,##0'
+
+            totalRow.alignment = { vertical: 'middle' }
+            totalRow.eachCell({ includeEmpty: true }, (cell) => {
+            cell.border = {
+                top: { style: 'thin', color: { argb: 'FF000000' } },
+                left: { style: 'thin', color: { argb: 'FF000000' } },
+                bottom: { style: 'double', color: { argb: 'FF000000' } },
+                right: { style: 'thin', color: { argb: 'FF000000' } },
+            }
+            })
+
+            res.setHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            );
+            res.setHeader('Content-Disposition', 'attachment; filename="rekap_pasien.xlsx"')
+
+            await workbook.xlsx.write(res)
+            res.end()
+
+
         } catch (error) {
             next(error)
         }

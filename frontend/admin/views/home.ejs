@@ -160,15 +160,15 @@
   <!--end::App Main-->
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('filter-btn').addEventListener('click', async () => {
         startDate = document.getElementById('start-date').value
         endDate = document.getElementById('end-date').value
         currentPage = 1
-        fetchData(currentPage)
+        await fetchData(currentPage)
       })
 
-      fetchData(currentPage)
+      await fetchData(currentPage)
     })
   </script>
 
