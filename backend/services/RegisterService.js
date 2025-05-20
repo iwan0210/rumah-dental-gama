@@ -11,7 +11,7 @@ class RegisterClass {
 
         const id = nanoid(16)
         const queueNumber = await this.getQueueNumber(tanggalDaftar)
-        await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [id, queueNumber, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan])
 
         return id
