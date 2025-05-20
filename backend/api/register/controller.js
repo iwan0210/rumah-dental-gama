@@ -21,9 +21,9 @@ class RegisterHandler {
         try {
             const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan } = req.body
             this._validator.validateAddRegisterPayload(req.body)
-            const id = await this._service.register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan)
+            const [id, queueNumber] = await this._service.register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan)
 
-            await this._sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan)
+            await this._sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, queueNumber)
 
             const response = {
                 error: false,
@@ -165,12 +165,13 @@ class RegisterHandler {
         }
     }
 
-    async _sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan) {
+    async _sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, noReg) {
         const jenisKelamin = jk === 'L' ? 'Laki-laki' : 'Perempuan'
         const message = `*🦷 Rumah Dental Gama - Pendaftaran Berhasil ✅*\n\n` +
             `Halo *${nama}*,\n` +
             `Terima kasih telah melakukan pendaftaran di *Rumah Dental Gama*.\n\n` +
             `📅 *Tanggal Daftar:* ${tanggalDaftar}\n\n` +
+            `🔢 *Nomor Antrian:* ${noReg}\n\n` +
             `📌 *Data Anda:*\n` +
             `• NIK: ${nik}\n` +
             `• No. HP: ${nohp}\n` +

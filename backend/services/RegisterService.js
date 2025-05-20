@@ -14,7 +14,7 @@ class RegisterClass {
         await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [id, queueNumber, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan])
 
-        return id
+        return [id, queueNumber]
     }
 
     async insertCompleteRegister(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total) {
