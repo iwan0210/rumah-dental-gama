@@ -287,17 +287,20 @@ const printRegister = id => {
 
     const item = listData.find(item => item.id === id);
     if (!item) {
-        alert('Data tidak ditemukan');
+        alert('Data tidak ditemukan')
         return;
     }
 
-    const invoiceWindow = window.open('', '_blank');
+    const invoiceWindow = window.open('', '_blank')
+    if (!invoiceWindow) {
+        alert('Popup diblokir. Harap izinkan popup di browser Anda.')
+        return;
+    }
 
-    invoiceWindow.onload = () => {
-        const doc = invoiceWindow.document;
+    const tindakan = (item.tindakan || '-').replace(/\n/g, '<br>')
+    const obat = (item.obat || '-').replace(/\n/g, '<br>')
 
-        // Build styles
-        const style = `
+    const style = `
         body {
             font-family: monospace;
             font-size: 12px;
@@ -330,19 +333,9 @@ const printRegister = id => {
             font-size: 13px;
             margin-top: 10px;
         }
-    `;
+    `
 
-        // Append <style> tag
-        const styleEl = doc.createElement('style');
-        styleEl.textContent = style;
-        doc.head.appendChild(styleEl);
-
-        // Format tindakan and obat with line breaks
-        const tindakan = (item.tindakan || '-').replace(/\n/g, '<br>');
-        const obat = (item.obat || '-').replace(/\n/g, '<br>');
-
-        // Set the body HTML content
-        doc.body.innerHTML = `
+    const htmlContent = `
         <div class="center">
             <h3>Rumah Dental Gama</h3>
             <div>Gg. Kasuari, Bogoran, Kauman, Kabupaten Batang</div>
@@ -362,20 +355,32 @@ const printRegister = id => {
             <tr><td class="label">Obat</td><td>:</td><td class="value">${obat}</td></tr>
         </table>
         <div class="line"></div>
-        <div class="total">Total: Rp ${Number(item.total).toLocaleString('id-ID')}</div>
+        <div class="total">Total: Rp ${Number(item.total || 0).toLocaleString('id-ID')}</div>
         <div class="line"></div>
         <div class="center">-- Terima Kasih --</div>
-    `;
+    `
 
-        // Trigger print
-        invoiceWindow.focus();
-        invoiceWindow.print();
+    const waitForLoad = () => {
+        if (invoiceWindow.document.readyState === 'complete') {
+            const doc = invoiceWindow.document
+            doc.head.innerHTML = ''
+            doc.body.innerHTML = ''
 
-        // Close after print
-        invoiceWindow.onafterprint = () => {
-            invoiceWindow.close();
-        };
-    };
+            const styleEl = doc.createElement('style');
+            styleEl.textContent = style
+            doc.head.appendChild(styleEl)
+
+            doc.body.innerHTML = htmlContent
+
+            invoiceWindow.focus()
+            invoiceWindow.print()
+            invoiceWindow.onafterprint = () => invoiceWindow.close()
+        } else {
+            setTimeout(waitForLoad, 50)
+        }
+    }
+
+    waitForLoad()
 }
 
 const searchPatient = async () => {
