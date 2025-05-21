@@ -166,6 +166,7 @@ class RegisterHandler {
     }
 
     async _sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, noReg) {
+        const age = this.getAge(tglLahir)
         const jenisKelamin = jk === 'L' ? 'Laki-laki' : 'Perempuan'
         const message = `*🦷 Rumah Dental Gama - Pendaftaran Berhasil ✅*\n\n` +
             `Halo *${nama}*,\n` +
@@ -177,6 +178,7 @@ class RegisterHandler {
             `• No. HP: ${nohp}\n` +
             `• Jenis Kelamin: ${jenisKelamin}\n` +
             `• Tanggal Lahir: ${tglLahir}\n` +
+            `• Umur: ${age} tahun\n` +
             `• Alamat: ${alamat}\n` +
             `• Keluhan: ${keluhan}\n\n` +
             `🔗 *Detail Pendaftaran:*\n` +
@@ -316,6 +318,17 @@ class RegisterHandler {
         } catch (error) {
             next(error)
         }
+    }
+
+    getAge(dateString) {
+        const birthDate = new Date(dateString)
+        const today = new Date()
+        let age = today.getFullYear() - birthDate.getFullYear()
+        const m = today.getMonth() - birthDate.getMonth()
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--
+        }
+        return age
     }
 }
 
