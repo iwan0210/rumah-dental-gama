@@ -1,3 +1,5 @@
 node_modules/
 .env
 insertUser.js
+sitemap.xml
+robots.txt
