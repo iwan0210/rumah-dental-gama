@@ -542,3 +542,65 @@ const exportExcel = async () => {
         alert('Error fetching data. Please try again later.')
     }
 }
+
+const fetchSearchPatient = async () => {
+    const query = document.getElementById('input-search').value.trim()
+
+    if (query.length < 3) {
+        alert('Minimal 3 karakter')
+        return
+    }
+
+    try {
+        const response = await axios.get('/api/register/search', {
+            params: {
+                query: query
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const { data } = response.data
+
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="15" class="text-center">No Data Available.</td>
+                </tr>
+            `
+            return
+        }
+        
+        data.forEach((item, index) => {
+            const age = getAge(item.tgl_lahir)
+            const jenisKelamin = item.jk === 'L' ? 'Laki-laki' : item.jk === 'P' ? 'Perempuan' : 'Tidak diketahui';
+            const row = document.createElement('tr')
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${item.nama}</td>
+                <td>${item.nik}</td>
+                <td>${jenisKelamin}</td>
+                <td>${item.tgl_lahir.split('T')[0]} / ${age} Th</td>
+                <td>${item.alamat}</td>
+                <td>${item.nohp}</td>
+                <td>${item.no_reg}</td>
+                <td>${item.tanggal.split('T')[0]}</td>
+                <td>${item.keluhan}</td>
+                <td>${item.diagnosa}</td>
+                <td>${item.tindakan}</td>
+                <td>${item.obat}</td>
+                <td>Rp ${item.total.toLocaleString('id-ID')}</td>
+                <td><button class="btn btn-primary" onclick="editRegister('${item.id}')">Edit</button>
+                <button class="btn btn-danger" onclick="deleteRegister('${item.id}')">Delete</button>
+            `
+            tableBody.appendChild(row)
+        })
+    } catch (error) {
+        console.error('Error fetching data:', error)
+        alert('Error fetching data. Please try again later.')
+    }
+}

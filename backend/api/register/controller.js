@@ -15,6 +15,7 @@ class RegisterHandler {
         this.getFinanceByYearHandler = this.getFinanceByYearHandler.bind(this)
         this.getAllRegisterByYearMonthHandler = this.getAllRegisterByYearMonthHandler.bind(this)
         this.getExportExcel = this.getExportExcel.bind(this)
+        this.getPatientByNameOrNikHandler = this.getPatientByNameOrNikHandler.bind(this)
     }
 
     async postRegisterHandler(req, res, next) {
@@ -329,6 +330,22 @@ class RegisterHandler {
             age--
         }
         return age
+    }
+
+    async getPatientByNameOrNikHandler(req, res, next) {
+        try {
+            const { query = "-" } = req.query
+            const result = await this._service.getPatientByNameOrNik(query)
+            const response = {
+                error: false,
+                status: 200,
+                message: 'Success',
+                data: result
+            }
+            res.status(200).json(response)
+        } catch (error) {
+            next(error)
+        }
     }
 }
 

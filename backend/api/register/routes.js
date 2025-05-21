@@ -12,6 +12,7 @@ const registerHandler = new RegisterHandler(registerService, RegisterValidator, 
 router.post('/', registerHandler.postRegisterHandler)
 router.get('/', verifyToken, registerHandler.getAllRegisterHandler)
 router.get('/patient', verifyToken, registerHandler.getAllRegisterByYearMonthHandler)
+router.get('/search', verifyToken, registerHandler.getPatientByNameOrNikHandler)
 router.get('/patient/:nik', verifyToken, registerHandler.getRegisterByNikHandler)
 router.get('/export', verifyToken, registerHandler.getExportExcel)
 router.post('/complete', verifyToken, registerHandler.postCompleteRegisterHandler)

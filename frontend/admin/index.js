@@ -33,6 +33,10 @@ router.get('/patient', (_, res) => {
     res.render('patient', { title: 'Rekap Pasien' })
 })
 
+router.get('/search', (_, res) => {
+    res.render('search', { title: 'Pencarian Pasien' })
+})
+
 router.get('/add', (_, res) => {
     res.render('add-data', { title: 'Tambah Data' })
 })

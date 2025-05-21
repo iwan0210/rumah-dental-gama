@@ -20,7 +20,7 @@ class RegisterClass {
     async insertCompleteRegister(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total) {
         const id = nanoid(16)
         const queueNumber = await this.getQueueNumber(tanggalDaftar)
-        await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan, diagnosa, tindakan, obat, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan, diagnosa, tindakan, obat, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [id, queueNumber, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total])
         return id
     }
@@ -168,6 +168,20 @@ class RegisterClass {
         }))
 
         return rows
+    }
+
+    async getPatientByNameOrNik(nameOrNik) {
+        const [result] = await this._pool.query("SELECT * FROM registrasi WHERE nama LIKE ? OR nik LIKE ? order by tanggal desc, no_reg asc", [`%${nameOrNik}%`, `%${nameOrNik}%`])
+
+        const cleaned = result.map(row => ({
+            ...row,
+            diagnosa: row.diagnosa || '',
+            tindakan: row.tindakan || '',
+            obat: row.obat || '',
+            total: row.total ?? 0,
+        }))
+
+        return cleaned
     }
 }
 
