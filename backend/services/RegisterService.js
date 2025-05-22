@@ -1,6 +1,7 @@
 const pool = require('../../db')
 const { nanoid } = require('nanoid')
 const NotFoundError = require('../exceptions/NotFoundError')
+const InvariantError = require('../exceptions/InvariantError')
 
 class RegisterClass {
     constructor() {
@@ -8,6 +9,8 @@ class RegisterClass {
     }
 
     async register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan) {
+
+        await this.checkDuplicate(nik, tanggalDaftar)
 
         const id = nanoid(16)
         const queueNumber = await this.getQueueNumber(tanggalDaftar)
@@ -182,6 +185,14 @@ class RegisterClass {
         }))
 
         return cleaned
+    }
+
+    async checkDuplicate(nik, tanggal) {
+        const [result] = await this._pool.query("SELECT id FROM registrasi WHERE nik = ? and tanggal = ?", [nik, tanggal])
+
+        if (result.length > 0) {
+            throw new InvariantError("Pasien sudah terdaftar pada tanggal tersebut")
+        }
     }
 }
 
