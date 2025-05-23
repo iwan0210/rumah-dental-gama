@@ -131,9 +131,9 @@ class RegisterClass {
                 YEAR(tanggal) AS tahun,
                 MONTH(tanggal) AS bulan,
                 COUNT(*) AS jumlah_pasien,
-                SUM(total) AS total
+                SUM(COALESCE(total, 0)) AS total
             FROM registrasi
-            WHERE total IS NOT NULL AND YEAR(tanggal) = ?
+            WHERE YEAR(tanggal) = ?
             GROUP BY tahun, MONTH(tanggal)
             ORDER BY MONTH(tanggal)
       `, [year])
@@ -193,6 +193,27 @@ class RegisterClass {
         if (result.length > 0) {
             throw new InvariantError("Pasien sudah terdaftar pada tanggal tersebut")
         }
+    }
+
+    async getAllRegisterByRangeDate(startDate, endDate) {
+        const [result] = await this._pool.query(`SELECT 
+            id, nama, nik, jk, tgl_lahir, nohp, alamat, no_reg, tanggal,
+            keluhan, diagnosa, tindakan, obat,
+            IFNULL(total, 0) AS total
+        FROM registrasi 
+        WHERE tanggal BETWEEN ? AND ?
+        ORDER BY tanggal ASC, no_reg ASC`, [startDate, endDate])
+
+        if (result.length < 1) {
+            throw new NotFoundError(`Data registrasi tidak ditemukan`)
+        }
+
+        const rows = result.map(row => ({
+            ...row,
+            total: Number(row.total)
+        }))
+
+        return rows
     }
 }
 

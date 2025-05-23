@@ -1,13 +1,9 @@
 const router = require('express').Router()
 
-const { render } = require('ejs');
 const RegisterService = require('../../backend/services/RegisterService')
 const registerService = new RegisterService()
 
-const getCurrentDateInWIB = () => {
-    const wib = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-    return wib.getFullYear() + '-' + String(wib.getMonth() + 1).padStart(2, '0') + '-' + String(wib.getDate()).padStart(2, '0');
-}
+const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
 
 router.get('/', async (_, res) => {
     try {
@@ -29,19 +25,24 @@ router.get('/finance', async (_, res) => {
     }
 })
 
-router.get('/patient', (_, res) => {
-    res.render('patient', { title: 'Rekap Pasien' })
+router.get('/patient/monthly', (_, res) => {
+    res.render('patient-monthly', { title: 'Rekap Pasien' })
 })
 
-router.get('/search', (_, res) => {
+router.get('/patient/daily', (_, res) => {
+    const defaultDate = getCurrentDateInWIB()
+    res.render('patient-daily', { title: 'Rekap Pasien', defaultDate })
+})
+
+router.get('/patient/search', (_, res) => {
     res.render('search', { title: 'Pencarian Pasien' })
 })
 
-router.get('/add', (_, res) => {
+router.get('/patient/add', (_, res) => {
     res.render('add-data', { title: 'Tambah Data' })
 })
 
-router.get('/edit/:id', async (req, res) => {
+router.get('/patient/edit/:id', async (req, res) => {
     try {
         const data = await registerService.getRegisterById(req.params.id)
         res.render('edit-data', { title: 'Edit Data', ...data })

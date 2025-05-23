@@ -1,7 +1,4 @@
-const getCurrentDateInWIB = () => {
-    const wib = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-    return wib.getFullYear() + '-' + String(wib.getMonth() + 1).padStart(2, '0') + '-' + String(wib.getDate()).padStart(2, '0');
-}
+const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
 
 const token = localStorage.getItem('accessToken')
 let startDate = getCurrentDateInWIB()
@@ -231,7 +228,7 @@ const insertData = async () => {
 }
 
 const editRegister = registerId => {
-    window.location = '/admin/edit/' + registerId
+    window.location = '/admin/patient/edit/' + registerId
 }
 
 const updateData = async (id) => {
@@ -452,12 +449,12 @@ const fetchFinance = async () => {
     }
 }
 
-const fetchPatientReport = async () => {
+const fetchPatientMonthlyReport = async () => {
     const selectedYear = document.getElementById('select-year').value.trim()
     const selectedMonth = document.getElementById('select-month').value.trim()
 
     try {
-        const response = await axios.get('/api/register/patient', {
+        const response = await axios.get('/api/register/patient/monthly', {
             params: {
                 year: selectedYear,
                 month: selectedMonth
@@ -501,12 +498,12 @@ const fetchPatientReport = async () => {
     }
 }
 
-const exportExcel = async () => {
+const exportExcelMonthly = async () => {
     const selectedYear = document.getElementById('select-year').value.trim()
     const selectedMonth = document.getElementById('select-month').value.trim()
 
     try {
-        const response = await axios.get('/api/register/export', {
+        const response = await axios.get('/api/register/export/monthly', {
             params: {
                 year: selectedYear,
                 month: selectedMonth
@@ -520,6 +517,45 @@ const exportExcel = async () => {
         const disposition = response.headers['content-disposition']
 
         let fileName = `rekap_pasien_${selectedYear}_${selectedMonth}.xlsx`
+
+        if (disposition && disposition.includes('filename=')) {
+            const fileNameMatch = disposition.match(/filename="?([^"]+)"?/);
+            if (fileNameMatch && fileNameMatch.length > 1) {
+                fileName = fileNameMatch[1].trim();
+            }
+        }
+
+        const url = window.URL.createObjectURL(response.data)
+
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+
+        a.remove()
+        window.URL.revokeObjectURL(url)
+    } catch (error) {
+        alert('Error fetching data. Please try again later.')
+    }
+}
+
+const exportExcelDaily = async () => {
+    try {
+        const response = await axios.get('/api/register/export/daily', {
+            params: {
+                startDate: startDate,
+                endDate: endDate
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            responseType: 'blob'
+        })
+
+        const disposition = response.headers['content-disposition']
+
+        let fileName = `rekap_pasien_${startDate}_to_${endDate}.xlsx`
 
         if (disposition && disposition.includes('filename=')) {
             const fileNameMatch = disposition.match(/filename="?([^"]+)"?/);
@@ -602,5 +638,52 @@ const fetchSearchPatient = async () => {
     } catch (error) {
         console.error('Error fetching data:', error)
         alert('Error fetching data. Please try again later.')
+    }
+}
+
+const fetchPatientDailyReport = async () => {
+    try {
+        const response = await axios.get('/api/register/patient/daily', {
+            params: {
+                startDate: startDate,
+                endDate: endDate
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const { data } = response.data
+
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+        data.forEach((item, index) => {
+            const arrTanggal = item.tanggal.split('-')
+            const row = document.createElement('tr')
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${arrTanggal[0]}</td>
+                <td>${bulan[Number(arrTanggal[1]) - 1]}</td>
+                <td>${item.tanggal}</td>
+                <td>${item.nama}</td>
+                <td>Rp ${item.total.toLocaleString('id-ID')}</td>
+            `
+            tableBody.appendChild(row)
+        })
+        const row = document.createElement('tr')
+        row.innerHTML = `
+            <td colspan="5" class="text-center">Total</td>
+            <td>Rp ${data.reduce((acc, item) => acc + item.total, 0).toLocaleString('id-ID')}</td>
+        `
+        tableBody.appendChild(row)
+    } catch (error) {
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+        const row = document.createElement('tr')
+        row.innerHTML = `
+            <td colspan="8" class="text-center">Data tidak ditemukan</td>
+        `
+        tableBody.appendChild(row)
+        console.error('Error fetching data:', error)
     }
 }
