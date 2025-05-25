@@ -30,7 +30,7 @@ class RegisterClass {
 
     async getAllRegister(page, limit, startDate, endDate) {
         const offset = (page - 1) * limit
-        const [result] = await this._pool.query("SELECT * FROM registrasi WHERE tanggal BETWEEN ? AND ? ORDER BY tanggal DESC LIMIT ? OFFSET ?", [startDate, endDate, parseInt(limit), offset])
+        const [result] = await this._pool.query("SELECT * FROM registrasi WHERE tanggal BETWEEN ? AND ? ORDER BY tanggal DESC, no_reg DESC LIMIT ? OFFSET ?", [startDate, endDate, parseInt(limit), offset])
         const [count] = await this._pool.query("SELECT COUNT(*) as total FROM registrasi WHERE tanggal BETWEEN ? AND ?", [startDate, endDate])
         const total = count[0].total
         const totalPage = Math.ceil(count / limit) || 1
