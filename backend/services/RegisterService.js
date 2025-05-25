@@ -146,8 +146,8 @@ class RegisterClass {
     }
 
     async getQueueNumber(registerDate) {
-        const [result] = await this._pool.query("SELECT COUNT(id) as total FROM registrasi WHERE tanggal = ?", [registerDate])
-        const total = result[0].total
+        const [result] = await this._pool.query("SELECT MAX(no_reg) as total FROM registrasi WHERE tanggal = ?", [registerDate])
+        const total = result[0].total || 0
 
         return total + 1
     }
