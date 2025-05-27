@@ -1,0 +1,108 @@
+<%- include('partials/header') %>
+
+    <!--begin::App Main-->
+    <main class="app-main">
+        <!--begin::App Content Header-->
+        <div class="app-content-header">
+            <!--begin::Container-->
+            <div class="container-fluid">
+                <!--begin::Row-->
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h3 class="mb-0">Tambah Pengguna</h3>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-end">
+                            <li class="breadcrumb-item"><a href="#">Tambah Pengguna</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                        </ol>
+                    </div>
+
+                    <!--begin::table-->
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Tambah Data Pengguna</h3>
+                            </div>
+                            <div class="card-body p-0 m-3">
+                                <form id="add-data-form">
+                                    <div class="row">
+                                        <div class="col-sm-6 mb-5">
+                                            <label for="user" class="form-label">User</label>
+                                            <input type="text" class="form-control mb-3" id="user" placeholder="user"
+                                                required>
+
+                                            <label for="name" class="form-label">Nama</label>
+                                            <input type="text" class="form-control mb-3" id="name" placeholder="Nama"
+                                                required>
+
+                                            <label for="role" class="form-label">Role</label>
+                                            <select class="form-select mb-3" id="role" required>
+                                                <option value="" disabled selected>Pilih Role</option>
+                                                <option value="admin">Admin</option>
+                                                <option value="pendaftaran">Pendaftaran</option>
+                                                <option value="operator">Operator</option>
+                                            </select>
+
+                                            <label for="password" class="form-label">Password</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="password"
+                                                    placeholder="password" required>
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    onclick="togglePassword()"><i class="bi bi-eye-fill"></i></button>
+                                            </div>
+                                        </div>
+                                </form>
+                            </div>
+                            <div class="card-footer clearfix">
+                                <div class="float-start">
+                                    <Button class="btn btn-danger" onclick="clearForm()">Kosongkan</Button>
+                                    <Button class="btn btn-primary" type="submit" form="add-data-form">Simpan</Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::table-->
+
+                </div>
+                <!--end::Row-->
+            </div>
+            <!--end::Container-->
+        </div>
+        <!--end::App Content Header-->
+        <!--begin::App Content-->
+        <div class="app-content">
+            <!--begin::Container-->
+            <div class="container-fluid">
+
+            </div>
+            <!--end::Container-->
+        </div>
+        <!--end::App Content-->
+    </main>
+    <!--end::App Main-->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('add-data-form').addEventListener('submit', async e => {
+                e.preventDefault()
+
+                await addUser()
+            })
+        })
+
+        const togglePassword = () => {
+            const passwordField = document.getElementById('password')
+            const button = event.currentTarget
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text'
+                button.innerHTML = '<i class="bi bi-eye-slash-fill"></i>'
+            } else {
+                passwordField.type = 'password'
+                button.innerHTML = '<i class="bi bi-eye-fill"></i>'
+            }
+        }
+
+    </script>
+
+    <%- include('partials/footer') %>

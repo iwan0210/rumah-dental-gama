@@ -137,7 +137,7 @@
 
             <li class="nav-item">
               <a href="/admin/patient/search" class="nav-link">
-                <i class="nav-icon bi bi-plus-circle"></i>
+                <i class="nav-icon bi bi-search"></i>
                 <p>Pencarian Pasien</p>
               </a>
             </li>
@@ -163,7 +163,28 @@
                 <p>Rekap Harian Pasien</p>
               </a>
             </li>
+
+            <li class="nav-item">
+              <a href="/admin/users" class="nav-link">
+                <i class="nav-icon bi bi-person-fill"></i>
+                <p>Data Pengguna</p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="/admin/users/add" class="nav-link">
+                <i class="nav-icon bi bi-person-fill-add"></i>
+                <p>Tambah Pengguna</p>
+              </a>
+            </li>
             <% } %>
+
+            <li class="nav-item">
+              <a href="/admin/users/password" class="nav-link">
+                <i class="nav-icon bi bi-lock-fill"></i>
+                <p>Ubah Password</p>
+              </a>
+            </li>
 
             <li class="nav-item">
               <a href="#" class="nav-link" onclick="logout()">

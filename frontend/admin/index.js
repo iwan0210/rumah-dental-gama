@@ -2,6 +2,8 @@ const router = require('express').Router()
 
 const RegisterService = require('../../backend/services/RegisterService')
 const registerService = new RegisterService()
+const UsersService = require('../../backend/services/UsersService')
+const usersService = new UsersService()
 
 const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
 
@@ -97,6 +99,55 @@ router.get('/login', (req, res) => {
     }
 
     res.render('login', { title: 'Login' })
+})
+
+router.get('/users', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/admin/login')
+    }
+
+    if (req.session.user.role !== 'admin') {
+        return res.status(404).render('404', { title: 'Forbidden' })
+    }
+
+    res.render('users', { title: 'Users', user: req.session.user })
+})
+
+router.get('/users/add', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/admin/login')
+    }
+
+    if (req.session.user.role !== 'admin') {
+        return res.status(404).render('404', { title: 'Forbidden' })
+    }
+
+    res.render('add-user', { title: 'Tambah User', user: req.session.user })
+})
+
+router.get('/users/edit/:id', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/admin/login')
+    }
+
+    if (req.session.user.role !== 'admin') {
+        return res.status(404).render('404', { title: 'Forbidden' })
+    }
+
+    try {
+        const data = await usersService.getUserById(req.params.id)
+        res.render('edit-user', { title: 'Edit User', users: data, user: req.session.user })
+    } catch (error) {
+        res.status(404).render('404', { title: 'Error' })
+    }
+})
+
+router.get('/users/password', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/admin/login')
+    }
+
+    res.render('change-password', { title: 'Ganti Password', user: req.session.user })
 })
 
 module.exports = router

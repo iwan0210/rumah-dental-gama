@@ -157,13 +157,24 @@ const getAge = dateString => {
     return age
 }
 
-const logout = () => {
+const logout = async () => {
     const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
     if (confirmLogout) {
-        // Clear all localStorage
+
+        try {
+            await axios.post('/api/users/auth/logout', {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+        } catch (error) {
+            console.error('Error during logout:', error);
+            alert('Gagal keluar. Silakan coba lagi.');
+            return;
+        }
+
         localStorage.clear();
 
-        // Optional: Redirect to login page
         window.location.href = "/admin/login";
     }
 }
@@ -176,19 +187,6 @@ const today = () => {
 
 const clearForm = () => {
     document.getElementById('add-data-form').reset()
-
-    document.getElementById('name').value = ''
-    document.getElementById('nik').value = ''
-    document.getElementById('alamat').value = ''
-    document.getElementById('telepon').value = ''
-    document.getElementById('tanggal-lahir').value = ''
-    document.getElementById('jenis-kelamin').value = ''
-    document.getElementById('tanggal-periksa').value = ''
-    document.getElementById('keluhan').value = ''
-    document.getElementById('diagnosa').value = ''
-    document.getElementById('tindakan').value = ''
-    document.getElementById('obat').value = ''
-    document.getElementById('biaya').value = ''
 }
 
 const insertData = async () => {
@@ -606,7 +604,7 @@ const fetchSearchPatient = async () => {
             `
             return
         }
-        
+
         data.forEach((item, index) => {
             const age = getAge(item.tgl_lahir)
             const jenisKelamin = item.jk === 'L' ? 'Laki-laki' : item.jk === 'P' ? 'Perempuan' : 'Tidak diketahui';
@@ -681,5 +679,155 @@ const fetchPatientDailyReport = async () => {
         `
         tableBody.appendChild(row)
         console.error('Error fetching data:', error)
+    }
+}
+
+const fetchUsers = async () => {
+    const searchQuery = document.getElementById('input-search').value.trim()
+    try {
+        const response = await axios.get('/api/users', {
+            params: {
+                search: searchQuery
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const { data } = response.data
+
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+        data.forEach((item) => {
+            const isCurrentUser = Number(localStorage.getItem('id')) === item.id
+            const row = document.createElement('tr')
+            row.innerHTML = `
+                <td>${item.id}</td>
+                <td>${item.user}</td>
+                <td>${item.name}</td>
+                <td>${item.role}</td>
+                <td><button class="btn btn-primary" onclick="editUser('${item.id}')">Edit</button>
+                ${!isCurrentUser ? `<button class="btn btn-danger" onclick="deleteUser('${item.id}')">Delete</button>` : ''}
+            `
+            tableBody.appendChild(row)
+        })
+    } catch (error) {
+        console.error('Error fetching users:', error)
+        alert('Error fetching users. Please try again later.')
+    }
+}
+
+const deleteUser = async (id) => {
+    try {
+        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus user ini?");
+        if (confirmDelete) {
+            await axios.delete('/api/users/' + id, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            fetchUsers()
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Gagal menghapus user. Silakan coba lagi.');
+    }
+}
+
+const addUser = async () => {
+    const user = document.getElementById('user').value.trim()
+    const name = document.getElementById('name').value.trim()
+    const password = document.getElementById('password').value.trim()
+    const role = document.getElementById('role').value.trim()
+
+    if (!user || !name || !password || !role) {
+        alert('User, Name, Role, and Password are required.')
+        return
+    }
+
+    try {
+        await axios.post('/api/users', {
+            user: user,
+            name: name,
+            password: password,
+            role: role
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        clearForm();
+        location.href = '/admin/users';
+    } catch (error) {
+        console.error('Error adding user:', error);
+        alert('Gagal menambahkan user. Silakan coba lagi.');
+    }
+}
+
+const editUser = id => {
+    window.location = '/admin/users/edit/' + id
+}
+
+const changeUser = async id => {
+    const user = document.getElementById('user').value.trim()
+    const name = document.getElementById('name').value.trim()
+    const role = document.getElementById('role').value.trim()
+    const password = document.getElementById('password').value.trim()
+
+    if (!user || !name || !role) {
+        alert('User, Name, and Role are required.')
+        return
+    }
+
+    try {
+        await axios.put('/api/users/' + id,
+            {
+                user: user,
+                name: name,
+                role: role,
+                password: password || undefined // Password is optional
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        clearForm();
+        location.href = '/admin/users';
+    } catch (error) {
+        console.error('Error changing password:', error);
+        alert('Gagal mengubah password. Silakan coba lagi.');
+
+    }
+}
+
+const changePassword = async () => {
+    const oldPassword = document.getElementById('oldPassword').value.trim()
+    const newPassword = document.getElementById('newPassword').value.trim()
+
+    if (!oldPassword || !newPassword) {
+        alert('Old Password and New Password are required.')
+        return
+    }
+
+    try {
+        await axios.put('/api/users/auth/password', {
+            oldPassword: oldPassword,
+            newPassword: newPassword
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        alert('Password changed successfully.')
+        clearForm()
+        location.href = '/admin'
+    } catch (error) {
+        console.error('Error changing password:', error)
+        alert('Gagal mengubah password. Silakan coba lagi.')
     }
 }
