@@ -9,7 +9,6 @@ const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
 
 router.get('/', async (req, res) => {
 
-    console.error('Session:', req.session)
     if (!req.session.user) {
         return res.redirect('/admin/login')
     }

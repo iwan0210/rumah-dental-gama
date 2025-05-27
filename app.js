@@ -16,6 +16,8 @@ const dbOptions = {
 
 const sessionStore = new MySQLStore(dbOptions);
 
+app.set('trust proxy', 1)
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-default-secret',
     store: sessionStore,
@@ -24,7 +26,7 @@ app.use(session({
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 30,
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax'
     }
 }))
