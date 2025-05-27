@@ -8,6 +8,8 @@ const usersService = new UsersService()
 const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
 
 router.get('/', async (req, res) => {
+
+    console.log('Session:', req.session)
     if (!req.session.user) {
         return res.redirect('/admin/login')
     }

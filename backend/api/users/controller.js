@@ -30,6 +30,8 @@ class UsersHandler {
                 role: userCred.role
             }
 
+            req.session.save()
+
             const response = {
                 error: false,
                 status: 200,
