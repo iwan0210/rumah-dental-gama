@@ -6,7 +6,7 @@ const session = require('express-session')
 const port = process.env.PORT || 3000
 
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || 'your-default-secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
