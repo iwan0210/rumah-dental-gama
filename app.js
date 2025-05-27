@@ -3,10 +3,22 @@ const express = require('express')
 const path = require('path')
 const app = express()
 const session = require('express-session')
+const MySQLStore = require('express-mysql-session')(session);
 const port = process.env.PORT || 3000
+
+const dbOptions = {
+    host: process.env.MYSQLHOST || 'localhost',
+    port: process.env.MYSQLPORT || 3306,
+    user: process.env.MYSQLUSER,
+    password: process.env.MYSQLPASS,
+    database: process.env.MYSQLDB,
+}
+
+const sessionStore = new MySQLStore(dbOptions);
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-default-secret',
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -37,7 +49,7 @@ app.use('/api/users', usersRoutes, errorHandler)
 app.use('/', visitorRoutes)
 app.use('/admin', adminRoutes)
 
-app.get('/{*splat}',(_, res) => {
+app.get('/{*splat}', (_, res) => {
     res.status(404).render('404', { title: 'Error' })
 })
 
