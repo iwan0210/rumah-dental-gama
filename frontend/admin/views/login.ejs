@@ -94,9 +94,12 @@
                 const password = document.getElementById('password').value
 
                 try {
-                    const  response = await axios.post('/api/users/auth', {
+                    const response = await axios.post('/api/users/auth', {
                         user,
-                        password
+                        password,
+                        
+                    }, {
+                        withCredentials: true
                     })
 
                     const { accessToken, id, user: userId, name } = response.data.data
