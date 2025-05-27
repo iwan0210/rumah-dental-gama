@@ -30,7 +30,10 @@ class UsersHandler {
                 role: userCred.role
             }
 
-            req.session.save()
+            req.session.save(err => {
+                if (err) console.error('Session save error:', err)
+                console.log('Session saved successfully')
+            })
 
             const response = {
                 error: false,
