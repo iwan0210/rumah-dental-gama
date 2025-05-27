@@ -8,10 +8,6 @@ const limit = 10
 let listData = []
 const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
-if (!token) {
-    window.location.href = '/admin/login';
-}
-
 const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
 const Default = {
     scrollbarTheme: 'os-theme-light',

@@ -1,3 +1,5 @@
+const { name } = require("ejs")
+
 class UsersHandler {
     constructor(service, validator, tokenManager) {
         this._service = service
@@ -17,6 +19,13 @@ class UsersHandler {
             const userCred = await this._service.verifyUser(user, password)
 
             const accessToken = this._tokenManager.generateAccessToken(userCred)
+
+            req.session.user = {
+                id: userCred.id,
+                user: userCred.user,
+                name: userCred.name,
+                role: userCred.role
+            }
 
             const response = {
                 error: false,

@@ -142,6 +142,7 @@
               </a>
             </li>
 
+            <% if (user && user.role === 'admin') { %>
             <li class="nav-item">
               <a href="/admin/finance" class="nav-link">
                 <i class="nav-icon bi bi-cash"></i>
@@ -162,6 +163,7 @@
                 <p>Rekap Harian Pasien</p>
               </a>
             </li>
+            <% } %>
 
             <li class="nav-item">
               <a href="#" class="nav-link" onclick="logout()">

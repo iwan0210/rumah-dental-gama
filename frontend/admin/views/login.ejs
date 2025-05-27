@@ -86,9 +86,6 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            if (localStorage.getItem('accessToken')) {
-                window.location.href = '/admin'
-            }
 
             document.getElementById('admin-login').addEventListener('submit', async function (e) {
                 e.preventDefault()

@@ -14,14 +14,14 @@ class UsersService {
             throw new AuthenticationError("Kredensial  yang anda berikan salah")
         }
 
-        const { id, user, name, password: hashedPassword } = result[0]
+        const { id, user, name, role, password: hashedPassword } = result[0]
 
         const match = await bcrypt.compare(password, hashedPassword)
         if (!match) {
             throw new AuthenticationError("Kredensial  yang anda berikan salah")
         }
 
-        return { id, user, name }
+        return { id, user, name, role }
     }
 
     async changePassword(id, oldPassword, newPassword) {
