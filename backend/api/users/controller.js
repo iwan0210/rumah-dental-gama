@@ -32,7 +32,7 @@ class UsersHandler {
 
             req.session.save(err => {
                 if (err) console.error('Session save error:', err)
-                console.log('Session saved successfully')
+                console.error('Session saved successfully')
             })
 
             const response = {
