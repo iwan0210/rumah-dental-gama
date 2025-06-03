@@ -424,13 +424,36 @@ const fetchFinance = async () => {
             `
             tableBody.appendChild(row)
         })
-        const row = document.createElement('tr')
-        row.innerHTML = `
+
+        const totalPasien = data.reduce((acc, item) => acc + item.jumlah_pasien, 0)
+        const totalPendapatan = data.reduce((acc, item) => acc + item.total, 0)
+        const potongan = totalPendapatan * 0.025
+        const totalBersih = totalPendapatan - potongan
+
+        // Row Total
+        const totalRow = document.createElement('tr')
+        totalRow.innerHTML = `
             <td colspan="3" class="text-center">Total</td>
-            <td>${data.reduce((acc, item) => acc + item.jumlah_pasien, 0)}</td>
-            <td>Rp ${data.reduce((acc, item) => acc + item.total, 0).toLocaleString('id-ID')}</td>
+            <td>${totalPasien}</td>
+            <td>Rp ${totalPendapatan.toLocaleString('id-ID')}</td>
         `
-        tableBody.appendChild(row)
+        tableBody.appendChild(totalRow)
+
+        // Row Potongan 2,5%
+        const potonganRow = document.createElement('tr')
+        potonganRow.innerHTML = `
+            <td colspan="4" class="text-center">Potongan 2,5%</td>
+            <td>Rp ${potongan.toLocaleString('id-ID')}</td>
+        `
+        tableBody.appendChild(potonganRow)
+
+        // Row Total Bersih
+        const bersihRow = document.createElement('tr')
+        bersihRow.innerHTML = `
+            <td colspan="4" class="text-center">Total Bersih</td>
+            <td>Rp ${totalBersih.toLocaleString('id-ID')}</td>
+        `
+        tableBody.appendChild(bersihRow)
     } catch (error) {
         const tableBody = document.getElementById('table-body')
         tableBody.innerHTML = '' // Clear previous data
