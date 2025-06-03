@@ -474,12 +474,31 @@ const fetchPatientMonthlyReport = async () => {
             `
             tableBody.appendChild(row)
         })
+
+        const totalAmount = data.reduce((acc, item) => acc + item.total, 0)
+        const duaKomaLimaPersen = totalAmount * 0.025
+        const totalBersih = totalAmount - duaKomaLimaPersen
+
         const row = document.createElement('tr')
         row.innerHTML = `
             <td colspan="5" class="text-center">Total</td>
-            <td>Rp ${data.reduce((acc, item) => acc + item.total, 0).toLocaleString('id-ID')}</td>
+            <td>Rp ${totalAmount.toLocaleString('id-ID')}</td>
         `
         tableBody.appendChild(row)
+
+        const rowDuaKomaLimaPersen = document.createElement('tr')
+        rowDuaKomaLimaPersen.innerHTML = `
+            <td colspan="5" class="text-center">Potongan 2,5%</td>
+            <td>Rp ${duaKomaLimaPersen.toLocaleString('id-ID')}</td>
+        `
+        tableBody.appendChild(rowDuaKomaLimaPersen)
+
+        const rowTotalBersih = document.createElement('tr')
+        rowTotalBersih.innerHTML = `
+            <td colspan="5" class="text-center">Total Bersih</td>
+            <td>Rp ${totalBersih.toLocaleString('id-ID')}</td>
+        `
+        tableBody.appendChild(rowTotalBersih)
     } catch (error) {
         const tableBody = document.getElementById('table-body')
         tableBody.innerHTML = '' // Clear previous data
