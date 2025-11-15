@@ -27,7 +27,9 @@ class RegisterHandler {
             this._validator.validateAddRegisterPayload(req.body)
             const [id, queueNumber] = await this._service.register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan)
 
-            await this._sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, queueNumber)
+            this._sendWhatsappMessage(
+                id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, queueNumber
+            ).catch(err => console.log("WA error ignored:", err.message))
 
             const response = {
                 error: false,
