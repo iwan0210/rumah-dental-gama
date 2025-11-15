@@ -18,6 +18,7 @@ class RegisterHandler {
         this.getExportExcelDaily = this.getExportExcelDaily.bind(this)
         this.getPatientByNameOrNikHandler = this.getPatientByNameOrNikHandler.bind(this)
         this.getAllRegisterByRangeDateHandler = this.getAllRegisterByRangeDateHandler.bind(this)
+        this.postSendWhatsappMessage = this.postSendWhatsappMessage.bind(this)
     }
 
     async postRegisterHandler(req, res, next) {
@@ -461,6 +462,24 @@ class RegisterHandler {
                 status: 200,
                 message: 'Success',
                 data: result
+            }
+            res.status(200).json(response)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async postSendWhatsappMessage(req, res, next) {
+        try {
+            let { id } = req.params
+            const result = await this._service.getRegisterById(id)
+            const { nama, nik, nohp, alamat, jk, tgl_lahir, tanggal, keluhan, no_reg } = result
+
+            await this._sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tgl_lahir, tanggal, keluhan, no_reg) 
+            const response = {
+                error: false,
+                status: 200,
+                message: 'Success'
             }
             res.status(200).json(response)
         } catch (error) {

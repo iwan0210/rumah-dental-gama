@@ -90,6 +90,7 @@ const fetchData = async (page = 1) => {
                 <td>${item.keluhan}</td>
                 <td><button class="btn btn-primary" onclick="editRegister('${item.id}')">Edit</button>
                 <button class="btn btn-danger" onclick="deleteRegister('${item.id}')">Delete</button>
+                <button class="btn btn-info" onclick="sendMessage('${item.id}')">Kirim WA</button>
                 ${item.total ? `<button class="btn btn-success" onclick="printRegister('${item.id}')">Print</button>` : ''}
                 </td>
             `
@@ -871,5 +872,19 @@ const changePassword = async () => {
     } catch (error) {
         console.error('Error changing password:', error)
         alert('Gagal mengubah password. Silakan coba lagi.')
+    }
+}
+
+const sendMessage = async (id) => {
+    try {
+        await axios.post('/api/register/notif/' + id, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        alert('Pesan WhatsApp berhasil dikirim.')
+    } catch (error) {
+        console.error('Error sending WhatsApp message:', error)
+        alert('Gagal mengirim pesan WhatsApp. Silakan coba lagi.')
     }
 }

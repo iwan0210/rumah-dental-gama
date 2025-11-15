@@ -19,6 +19,7 @@ router.get('/export/monthly', verifyAdminToken, registerHandler.getExportExcelMo
 router.get('/export/daily', verifyAdminToken, registerHandler.getExportExcelDaily)
 router.post('/complete', verifyToken, registerHandler.postCompleteRegisterHandler)
 router.get('/finance/:year', verifyAdminToken, registerHandler.getFinanceByYearHandler)
+router.post('/notif/:id', verifyToken, registerHandler.postSendWhatsappMessage)
 router.get('/:id', verifyToken, registerHandler.getRegisterByIdHandler)
 router.delete('/:id', verifyToken, registerHandler.deleteRegisterByIdHandler)
 router.put('/:id', verifyToken, registerHandler.updateRegisterByIdHandler)
