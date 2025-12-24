@@ -57,7 +57,7 @@ router.get('/patient/daily', (req, res) => {
         return res.redirect('/admin/login')
     }
 
-    if (req.session.user.role !== 'admin') {
+    if (!['admin', 'pendaftaran'].includes(req.session.user.role)) {
         return res.status(404).render('404', { title: 'Forbidden' })
     }
 

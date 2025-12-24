@@ -157,7 +157,7 @@
               </a>
             </li>
 
-             <li class="nav-item">
+            <li class="nav-item">
               <a href="/admin/patient/daily" class="nav-link">
                 <i class="nav-icon bi bi-cash"></i>
                 <p>Rekap Harian Pasien</p>
@@ -175,6 +175,15 @@
               <a href="/admin/users/add" class="nav-link">
                 <i class="nav-icon bi bi-person-fill-add"></i>
                 <p>Tambah Pengguna</p>
+              </a>
+            </li>
+            <% } %>
+
+            <% if (user && user.role === 'pendaftaran') { %>
+            <li class="nav-item">
+              <a href="/admin/patient/daily" class="nav-link">
+                <i class="nav-icon bi bi-cash"></i>
+                <p>Rekap Harian Pasien</p>
               </a>
             </li>
             <% } %>
