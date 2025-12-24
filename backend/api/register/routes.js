@@ -16,7 +16,7 @@ router.get('/patient/daily', verifyAdminOrPendaftaranToken, registerHandler.getA
 router.get('/search', verifyToken, registerHandler.getPatientByNameOrNikHandler)
 router.get('/patient/:nik', verifyToken, registerHandler.getRegisterByNikHandler)
 router.get('/export/monthly', verifyAdminToken, registerHandler.getExportExcelMonthly)
-router.get('/export/daily', verifyAdminToken, registerHandler.getExportExcelDaily)
+router.get('/export/daily', verifyAdminOrPendaftaranToken, registerHandler.getExportExcelDaily)
 router.post('/complete', verifyToken, registerHandler.postCompleteRegisterHandler)
 router.get('/finance/:year', verifyAdminToken, registerHandler.getFinanceByYearHandler)
 router.post('/notif/:id', verifyToken, registerHandler.postSendWhatsappMessage)
