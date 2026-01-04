@@ -28,11 +28,13 @@ const RegisterSchema = {
         }),
         tglLahir: Joi.date().iso().required().messages({
             'date.base': 'Tanggal lahir harus berupa tanggal yang valid.',
+            'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal lahir wajib diisi.'
         }),
         tanggalDaftar: Joi.date().iso().required().messages({
-            'date.base': 'Tanggal lahir harus berupa tanggal yang valid.',
-            'any.required': 'Tanggal lahir wajib diisi.'
+            'date.base': 'Tanggal harus berupa tanggal yang valid.',
+            'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
+            'any.required': 'Tanggal wajib diisi.'
         }),
         keluhan: Joi.string().required().messages({
             'string.base': 'Keluhan harus berupa teks.',
@@ -52,10 +54,12 @@ const RegisterSchema = {
         }),
         startDate: Joi.date().iso().required().messages({
             'date.base': 'Tanggal mulai harus berupa tanggal yang valid.',
+            'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal mulai wajib diisi.'
         }),
         endDate: Joi.date().iso().required().messages({
             'date.base': 'Tanggal akhir harus berupa tanggal yang valid.',
+            'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal akhir wajib diisi.'
         })
     }),
@@ -85,10 +89,12 @@ const RegisterSchema = {
         }),
         tglLahir: Joi.date().iso().required().messages({
             'date.base': 'Tanggal lahir harus berupa tanggal yang valid.',
+            'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal lahir wajib diisi.'
         }),
         tanggalDaftar: Joi.date().iso().required().messages({
             'date.base': 'Tanggal lahir harus berupa tanggal yang valid.',
+            'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal lahir wajib diisi.'
         }),
         keluhan: Joi.string().required().messages({

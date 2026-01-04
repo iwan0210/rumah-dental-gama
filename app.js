@@ -43,11 +43,13 @@ app.set('views', [
 const errorHandler = require('./backend/middleware/ErrorHandler')
 const registerRoutes = require('./backend/api/register/routes')
 const usersRoutes = require('./backend/api/users/routes')
+const holidayRoutes = require('./backend/api/holiday/routes')
 const visitorRoutes = require('./frontend/visitor')
 const adminRoutes = require('./frontend/admin')
 
 app.use('/api/register', registerRoutes, errorHandler)
 app.use('/api/users', usersRoutes, errorHandler)
+app.use('/api/holiday', holidayRoutes, errorHandler)
 app.use('/', visitorRoutes)
 app.use('/admin', adminRoutes)
 

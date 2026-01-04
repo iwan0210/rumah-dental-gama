@@ -33,6 +33,14 @@
 <body>
   <h4 class="form-title">Form Pemeriksaan Pasien</h4>
   <form id="formPasien" novalidate>
+
+    <!-- Tanggal Pemeriksaan -->
+    <div class="mb-3">
+      <label for="tgl" class="form-label">Tanggal Pemeriksaan</label>
+      <input type="date" class="form-control" id="tgl" required />
+      <div class="invalid-feedback">Tanggal pemeriksaan tidak boleh sebelum hari ini.</div>
+    </div>
+
     <!-- Nama -->
     <div class="mb-3">
       <label for="nama" class="form-label">Nama</label>
@@ -119,13 +127,6 @@
       <div class="invalid-feedback mt-1" id="lahirError">Tanggal lahir tidak valid.</div>
     </div>
 
-    <!-- Tanggal Pemeriksaan -->
-    <div class="mb-3">
-      <label for="tgl" class="form-label">Tanggal Pemeriksaan</label>
-      <input type="date" class="form-control" id="tgl" required />
-      <div class="invalid-feedback">Tanggal pemeriksaan tidak boleh sebelum hari ini.</div>
-    </div>
-
     <!-- Keluhan -->
     <div class="mb-3">
       <label for="keluhan" class="form-label">Keluhan</label>
@@ -139,13 +140,39 @@
   </form>
 
   <script>
-    // Set min date for Tanggal Pemeriksaan
-    const tglInput = document.getElementById('tgl');
+    document.addEventListener('DOMContentLoaded', function () {
+    // Set min date (today) for Tanggal Pemeriksaan
+    const tglInput = document.getElementById('tgl')
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     tglInput.min = `${yyyy}-${mm}-${dd}`;
+
+    //global var isLibur
+    let isHariLibur = false
+
+
+    //cek hari libur (on change)
+    tglInput.addEventListener('change', async function() {
+      const tanggal = this.value
+      if (!tanggal) return
+
+      isHariLibur = false
+
+      try {
+        const res = await axios.get(`/api/holiday/${tanggal}`)
+        if(res.data.data.tanggal) {
+          isHariLibur = true
+        }
+      } catch (error) {
+        console.error('Gagal cek hari libur:', error)
+      }
+
+      console.log(validateTanggalPemeriksaan())
+    })
 
     document.getElementById('formPasien').addEventListener('submit', function (e) {
       e.preventDefault(); // Prevent form submission here
@@ -175,15 +202,8 @@
         }
       }
 
-      // --- VALIDATE TANGGAL PEMERIKSAAN >= TODAY ---
-      const selectedDate = new Date(tglInput.value);
-      selectedDate.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-      if (selectedDate < today) {
+      if (!validateTanggalPemeriksaan()) {
         isValid = false;
-        tglInput.classList.add('is-invalid');
-      } else {
-        tglInput.classList.remove('is-invalid');
       }
 
       if (!this.checkValidity() || !isValid) {
@@ -221,8 +241,41 @@
         })
         .catch((error) => {
           alert(`Terjadi kesalahan saat pendaftaran. Silakan coba lagi. \n${error.response.data.message}`);
-        });
-    });
+        })
+    })
+
+    function validateTanggalPemeriksaan() {
+      const tanggal = tglInput.value
+      if (!tanggal) return false
+
+      const selectedDate = new Date(tanggal)
+      selectedDate.setHours(0, 0, 0, 0)
+      today.setHours(0, 0, 0, 0)
+
+      // RESET STATE (INI KUNCI)
+      tglInput.classList.remove('is-valid', 'is-invalid')
+      tglInput.setCustomValidity('')
+
+      if (selectedDate < today) {
+        tglInput.setCustomValidity('Tanggal sebelum hari ini')
+        tglInput.classList.add('is-invalid');
+        tglInput.nextElementSibling.textContent =
+            'Tanggal pemeriksaan tidak boleh sebelum hari ini.'
+        return false;
+      }
+
+      if (isHariLibur) {
+        tglInput.setCustomValidity('Hari libur')
+        tglInput.classList.add('is-invalid')
+        tglInput.nextElementSibling.textContent =
+            'Tanggal tersebut merupakan hari libur.'
+        return false
+      }
+
+      tglInput.classList.add('is-valid')
+      return true 
+    }
+  })
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
