@@ -13,9 +13,9 @@ class HolidayHandler {
     async getAllHolidays(req, res, next) {
         try {
             this._validator.validateGetAllHolidayPayload(req.query)
-            const { page = 1, limit = 10 } = req.query
+            const { page = 1, limit = 10, search = '' } = req.query
 
-            const { result, total, totalPage, nextPage, prevPage } = await this._service.getAllHolidays(page, limit)
+            const { result, total, totalPage, nextPage, prevPage } = await this._service.getAllHolidays(page, limit, search)
             const response = {
                 error: false,
                 status: 200,

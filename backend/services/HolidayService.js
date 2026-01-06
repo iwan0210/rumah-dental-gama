@@ -7,9 +7,9 @@ class HolidayClass {
         this._pool = pool
     }
 
-    async getAllHolidays(page, limit) {
+    async getAllHolidays(page, limit, search) {
         const offset = (page - 1) * limit
-        const [result] = await this._pool.query("SELECT * FROM holiday ORDER BY tanggal DESC LIMIT ? OFFSET ?", [parseInt(limit), offset])
+        const [result] = await this._pool.query("SELECT * FROM holiday WHERE tanggal LIKE ? OR keterangan LIKE ? ORDER BY tanggal DESC LIMIT ? OFFSET ?", [`%${search}%`, `%${search}%`, parseInt(limit), offset])
         const [count] = await this._pool.query("SELECT COUNT(*) FROM holiday")
         const total = count[0].total
         const totalPage = Math.ceil(total / limit) || 1
