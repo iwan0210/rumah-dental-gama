@@ -110,6 +110,8 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
 
+      modal = new bootstrap.Modal(document.getElementById('holidayModal'))
+
       document.getElementById('search-btn').addEventListener('click', async () => {
         await fetchHolidays()
       })

@@ -9,8 +9,7 @@ let listData = []
 const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 let mode = 'add'
 let selectedTanggal = null
-
-const modal = new bootstrap.Modal(document.getElementById('holidayModal'))
+let modal
 
 const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
 const Default = {
