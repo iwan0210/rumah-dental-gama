@@ -7,6 +7,10 @@ let currentPage = 1
 const limit = 10
 let listData = []
 const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+let mode = 'add'
+let selectedTanggal = null
+
+const modal = new bootstrap.Modal(document.getElementById('holidayModal'))
 
 const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
 const Default = {
@@ -887,4 +891,149 @@ const sendMessage = async (id) => {
         console.error('Error sending WhatsApp message:', error)
         alert('Gagal mengirim pesan WhatsApp. Silakan coba lagi.')
     }
+}
+
+const fetchHolidays = async (page = 1) => {
+    const searchQuery = document.getElementById('input-search').value.trim()
+    try {
+        const response = await axios.get('/api/holiday', {
+            params: {
+                page: page,
+                limit: limit,
+                search: searchQuery
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const { data, pagination } = response.data
+
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+
+        data.forEach((item) => {
+            const row = document.createElement('tr')
+            row.innerHTML = `
+                <td>${formatTanggalIndo(item.tanggal)}</td>
+                <td>${item.keterangan}</td>
+                <td><button class="btn btn-primary" onclick="editHoliday('${item.tanggal}', '${item.keterangan}')">Edit</button>
+                <button class="btn btn-danger" onclick="deleteHoliday('${item.tanggal}')">Delete</button>
+            `
+            tableBody.appendChild(row)
+        })
+
+        const paginationElement = document.getElementById('pagination')
+        paginationElement.innerHTML = '' // Clear previous pagination
+
+
+        currentPage = pagination.page
+        const pageInfo = document.getElementById('page-info')
+        pageInfo.innerHTML = `Page ${pagination.page} of ${pagination.totalPage}`
+        updateHolidayPagination(pagination.page, pagination.totalPage)
+    } catch (error) {
+        console.error('Error fetching holidays:', error)
+        alert('Error fetching holidays. Please try again later.')
+    }
+}
+
+const deleteHoliday = async (date) => {
+    try {
+        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus tanggal ini?");
+        if (confirmDelete) {
+            await axios.delete('/api/holiday/' + date, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            fetchHolidays()
+        }
+    } catch (error) {
+        console.error('Error deleting holiday: ', error);
+        alert('Gagal menghapus holiday. Silakan coba lagi.');
+    }
+}
+
+const editHoliday = async (tanggal, keterangan) => {
+    mode = 'edit'
+    selectedTanggal = tanggal
+    document.getElementById('modalTitle').innerText = 'Edit Hari Tutup'
+    document.getElementById('tanggal').value = tanggal
+    document.getElementById('keterangan').value = keterangan
+    document.getElementById('tanggal').disabled = true
+    modal.show()
+}
+
+const submitHoliday = async () => {
+    const data = {
+        tanggal: document.getElementById('tanggal').value,
+        keterangan: document.getElementById('keterangan').value
+    }
+
+    try {
+        if (mode === 'add') {
+            await axios.post('/api/holiday/', data, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+        } else {
+            await axios.put(`/api/holiday/${selectedTanggal}`, {
+                keterangan: data.keterangan
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+        }
+    } catch (error) {
+        console.error('Error submit holiday: ', error);
+        alert('Gagal submit holiday. Silakan coba lagi.');
+    }
+}
+
+const formatTanggalIndo = (dateStr) => {
+    const date = new Date(dateStr)
+
+    const formatted = new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    }).format(date)
+
+    return `${dateStr} (${formatted})`
+}
+
+const updateHolidayPagination = (page, totalPage) => {
+    const paginationElement = document.getElementById('pagination')
+    paginationElement.innerHTML = `
+    <li class="page-item ${page === 1 ? 'disabled' : ''}">
+        <a id="prev-page" class="page-link" href="#" onclick="fetchHolidays(${page - 1})">&laquo;</a>
+    </li>
+    `
+    for (let i = 1; i <= totalPage; i++) {
+        const li = document.createElement('li')
+        li.classList.add('page-item')
+
+        const a = document.createElement('a')
+        a.classList.add('page-link')
+        a.href = '#'
+        a.textContent = i
+
+        if (i === page) {
+            li.classList.add('active')
+            a.style.pointerEvents = 'none' // Disable click
+        } else {
+            a.setAttribute('onclick', `fetchHolidays(${i})`)
+        }
+
+        li.appendChild(a)
+        paginationElement.appendChild(li)
+    }
+
+    paginationElement.innerHTML += `
+    <li class="page-item ${page === totalPage ? 'disabled' : ''}">
+        <a id="next-page" class="page-link" href="#" onclick="fetchHolidays(${page + 1})">&raquo;</a>
+    </li>
+    `
 }
