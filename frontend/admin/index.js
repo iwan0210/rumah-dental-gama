@@ -151,12 +151,4 @@ router.get('/users/password', (req, res) => {
     res.render('change-password', { title: 'Ganti Password', user: req.session.user })
 })
 
-router.get('/holiday', (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/admin/login')
-    }
-
-    res.render('holiday', { title: 'Hari Libur', user: req.session.user})
-})
-
 module.exports = router

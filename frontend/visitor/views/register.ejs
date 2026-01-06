@@ -171,7 +171,7 @@
         console.error('Gagal cek hari libur:', error)
       }
 
-      validateTanggalPemeriksaan()
+      console.log(validateTanggalPemeriksaan())
     })
 
     document.getElementById('formPasien').addEventListener('submit', function (e) {
@@ -268,7 +268,7 @@
         tglInput.setCustomValidity('Hari libur')
         tglInput.classList.add('is-invalid')
         tglInput.nextElementSibling.textContent =
-            'Tanggal tersebut tutup.'
+            'Tanggal tersebut merupakan hari libur.'
         return false
       }
 

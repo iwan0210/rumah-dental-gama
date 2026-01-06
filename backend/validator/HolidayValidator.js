@@ -12,8 +12,7 @@ const HolidaySchema = {
             'number.base': 'Limit harus berupa angka.',
             'number.integer': 'Limit harus berupa angka bulat.',
             'number.min': 'Limit minimal 1.'
-        }),
-        search: Joi.string().optional().allow('')
+        })
     }),
     addHoliday: Joi.object({
         tanggal: Joi.date().iso().required().messages({
