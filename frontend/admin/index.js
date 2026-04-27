@@ -1,5 +1,8 @@
 const router = require('express').Router()
 
+const csrf = require('csurf')
+const csrfProtection = csrf()
+
 const RegisterService = require('../../backend/services/RegisterService')
 const registerService = new RegisterService()
 const UsersService = require('../../backend/services/UsersService')
@@ -8,6 +11,25 @@ const PatientService = require('../../backend/services/PatientService')
 const patientService = new PatientService()
 
 const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
+
+router.use((req, res, next) => {
+    // ❌ skip login page
+    if (req.path === '/login') {
+        return next()
+    }
+
+    csrfProtection(req, res, (err) => {
+        if (err) return next(err)
+
+        try {
+            res.locals.csrfToken = req.csrfToken()
+        } catch {
+            res.locals.csrfToken = null
+        }
+
+        next()
+    })
+})
 
 router.get('/', async (req, res) => {
 

@@ -3,6 +3,7 @@ const express = require('express')
 const path = require('path')
 const app = express()
 const helmet = require('helmet')
+const csrf = require('csurf')
 const session = require('express-session')
 const MySQLStore = require('express-mysql-session')(session);
 const port = process.env.PORT || 3000
@@ -28,48 +29,13 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-
-            // ✅ JS (kalau pakai CDN atau inline)
-            scriptSrc: [
-                "'self'",
-                "'unsafe-inline'",
-                "https://cdn.jsdelivr.net"
-            ],
-
-            scriptSrcAttr: [
-                "'unsafe-inline'"
-            ],
-
-            // ✅ CSS (bootstrap CDN)
-            styleSrc: [
-                "'self'",
-                "'unsafe-inline'",
-                "https://cdn.jsdelivr.net"
-            ],
-
-            // ✅ gambar
-            imgSrc: [
-                "'self'",
-                "data:",
-                "https://maps.gstatic.com",
-                "https://maps.googleapis.com"
-            ],
-
-            // ✅ API / fetch / axios
-            connectSrc: [
-                "'self'",
-                "https://cdn.jsdelivr.net"
-            ],
-
-            // ✅ iframe (Google Maps)
-            frameSrc: [
-                "'self'",
-                "https://www.google.com"
-            ],
-            fontSrc: [
-                "'self'",
-                "https://cdn.jsdelivr.net"
-            ],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            scriptSrcAttr: ["'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            imgSrc: ["'self'", "data:", "https://maps.gstatic.com", "https://maps.googleapis.com"],
+            connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            frameSrc: ["'self'", "https://www.google.com"],
+            fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
             objectSrc: ["'none'"],
             baseUri: ["'self'"]
         }
@@ -92,14 +58,32 @@ app.use(session({
     }
 }))
 
-app.use(express.static(path.join(__dirname, 'frontend/public')));
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(express.static(path.join(__dirname, 'frontend/public')))
 app.set('view engine', 'ejs')
 app.set('views', [
     path.join(__dirname, 'frontend/visitor/views'),
     path.join(__dirname, 'frontend/admin/views')
 ])
+
+app.use((req, res, next) => {
+    try {
+        const token = csrf().createToken ? null : null // dummy supaya tidak error
+    } catch {}
+    next()
+})
+
+const csrfProtection = csrf()
+
+app.use((req, res, next) => {
+    try {
+        res.locals.csrfToken = req.csrfToken ? req.csrfToken() : null
+    } catch {
+        res.locals.csrfToken = null
+    }
+    next()
+})
 
 const errorHandler = require('./backend/middleware/ErrorHandler')
 const registerRoutes = require('./backend/api/register/routes')

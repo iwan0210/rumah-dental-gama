@@ -1,3 +1,10 @@
+const csrfToken = document
+    .querySelector('meta[name="csrf-token"]')
+    ?.getAttribute('content')
+
+if (csrfToken) {
+    axios.defaults.headers.common['CSRF-Token'] = csrfToken
+}
 const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
 
 const token = localStorage.getItem('accessToken')
