@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const path = require('path')
 const app = express()
+const helmet = require('helmet')
 const session = require('express-session')
 const MySQLStore = require('express-mysql-session')(session);
 const port = process.env.PORT || 3000
@@ -14,20 +15,80 @@ const dbOptions = {
     database: process.env.MYSQLDB,
 }
 
-const sessionStore = new MySQLStore(dbOptions);
+const sessionStore = new MySQLStore({
+    ...dbOptions,
+    clearExpired: true,
+    checkExpirationInterval: 1000 * 60 * 15,
+    expiration: 1000 * 60 * 60 * 24 * 30
+})
 
 app.set('trust proxy', 1)
 
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+
+            // ✅ JS (kalau pakai CDN atau inline)
+            scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://cdn.jsdelivr.net"
+            ],
+
+            scriptSrcAttr: [
+                "'unsafe-inline'"
+            ],
+
+            // ✅ CSS (bootstrap CDN)
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://cdn.jsdelivr.net"
+            ],
+
+            // ✅ gambar
+            imgSrc: [
+                "'self'",
+                "data:",
+                "https://maps.gstatic.com",
+                "https://maps.googleapis.com"
+            ],
+
+            // ✅ API / fetch / axios
+            connectSrc: [
+                "'self'",
+                "https://cdn.jsdelivr.net"
+            ],
+
+            // ✅ iframe (Google Maps)
+            frameSrc: [
+                "'self'",
+                "https://www.google.com"
+            ],
+            fontSrc: [
+                "'self'",
+                "https://cdn.jsdelivr.net"
+            ],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"]
+        }
+    }
+}))
+
 app.use(session({
+    name: 'sid',
     secret: process.env.SESSION_SECRET || 'your-default-secret',
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    rolling: true,
+    proxy: true,
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 30,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
     }
 }))
 
