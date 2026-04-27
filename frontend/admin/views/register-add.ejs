@@ -13,7 +13,7 @@
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
-                            <li class="breadcrumb-item"><a href="#">Edit Data</a></li>
+                            <li class="breadcrumb-item"><a href="#">Tambah Data</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
                         </ol>
                     </div>
@@ -22,50 +22,52 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">Edit Data Pasien</h3>
+                                <h3 class="card-title">Tambah Data Registrasi</h3>
                             </div>
                             <div class="card-body p-0 m-3">
                                 <form id="add-data-form">
                                     <div class="row">
                                         <div class="col-sm-6 mb-3">
+                                            <label for="name" class="form-label">No. RM</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="no_rkm_medis"
+                                                    placeholder="Nomor Rekam Medis" required readonly>
+                                                <button class="btn btn-secondary" id="norm-btn" type="button"
+                                                    onclick="openModalPasien()">Cari pasien</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
                                             <label for="name" class="form-label">Nama</label>
                                             <input type="text" class="form-control" id="name" placeholder="Nama"
-                                                value="<%= nama %>" required>
+                                                disabled>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="nik" class="form-label">NIK</label>
-                                            <input type="text" class="form-control" id="nik" placeholder="NIK"
-                                                value="<%= nik %>" required>
+                                            <input type="text" class="form-control" id="nik" placeholder="NIK" disabled>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="alamat" class="form-label">Alamat</label>
                                             <input type="text" class="form-control" id="alamat" placeholder="Alamat"
-                                                value="<%= alamat %>" required>
+                                                disabled>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="telepon" class="form-label">Nomor Telepon</label>
-                                            <input type="text" class="form-control" id="telepon" value="<%= nohp %>"
-                                                placeholder="Nomor Telepon" required>
+                                            <input type="text" class="form-control" id="telepon"
+                                                placeholder="Nomor Telepon" disabled>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="tanggal-lahir" class="form-label">Tanggal Lahir</label>
-                                            <input type="date" class="form-control" id="tanggal-lahir"
-                                                value="<%= tgl_lahir %>" required>
+                                            <input type="date" class="form-control" id="tanggal-lahir" disabled>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="jenis-kelamin" class="form-label">Jenis Kelamin</label>
-                                            <select class="form-select" id="jenis-kelamin" required>
-                                                <option value="L" <%= jk==='L' ? 'selected' : '' %>
-                                                    >Laki-laki</option>
-                                                <option value="P" <%= jk==='P' ? 'selected' : '' %>
-                                                    >Perempuan</option>
-                                            </select>
+                                            <input type="text" class="form-control" id="jenis-kelamin"
+                                                placeholder="Jenis Kelamin" disabled>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="tanggal-periksa" class="form-label">Tanggal Periksa</label>
                                             <div class="input-group">
-                                                <input type="date" class="form-control" id="tanggal-periksa"
-                                                    value="<%= tanggal %>" required>
+                                                <input type="date" class="form-control" id="tanggal-periksa" readonly>
                                                 <button class="btn btn-secondary" id="today-btn" type="button"
                                                     onclick="today()">Hari Ini</button>
                                             </div>
@@ -73,29 +75,28 @@
                                         <div class="col-sm-6 mb-3">
                                             <label for="keluhan" class="form-label">Keluhan</label>
                                             <textarea class="form-control" id="keluhan" rows="3" placeholder="Keluhan"
-                                                required><%= keluhan %></textarea>
+                                                required></textarea>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="diagnosa" class="form-label">Diagnosa</label>
                                             <textarea class="form-control" id="diagnosa" rows="3"
-                                                placeholder="Diagnosa"><%= diagnosa %></textarea>
+                                                placeholder="Diagnosa"></textarea>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="tindakan" class="form-label">Tindakan</label>
                                             <textarea class="form-control" id="tindakan" rows="3"
-                                                placeholder="Tindakan"><%= tindakan %></textarea>
+                                                placeholder="Tindakan"></textarea>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="obat" class="form-label">obat</label>
                                             <textarea class="form-control" id="obat" rows="3"
-                                                placeholder="Obat"><%= obat %></textarea>
+                                                placeholder="Obat"></textarea>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="biaya" class="form-label">Biaya</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">Rp</span>
                                                 <input type="text" class="form-control no-arrows" id="biaya"
-                                                    value="<%= new Intl.NumberFormat('id-ID').format(total) %>"
                                                     placeholder="Biaya" required>
                                             </div>
 
@@ -127,6 +128,40 @@
             <!--end::Container-->
         </div>
         <!--end::App Content-->
+        <!-- Modal Cari Pasien -->
+        <div class="modal fade" id="modalPasien" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cari Pasien</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="text" id="search-pasien" class="form-control mb-3"
+                            placeholder="Cari nama / NIK / alamat">
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Aksi</th>
+                                        <th>No RM</th>
+                                        <th>Nama</th>
+                                        <th>NIK</th>
+                                        <th>JK</th>
+                                        <th>Tgl Lahir</th>
+                                        <th>No HP</th>
+                                        <th>Alamat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="result-pasien"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
     <!--end::App Main-->
 
@@ -145,7 +180,25 @@
             document.getElementById('add-data-form').addEventListener('submit', e => {
                 e.preventDefault()
 
-                updateData('<%= id %>')
+                insertData()
+            })
+
+            modal = new bootstrap.Modal(document.getElementById('modalPasien'))
+            const searchInput = document.getElementById('search-pasien')
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer)
+
+                debounceTimer = setTimeout(() => {
+                    fetchPasien(this.value)
+                }, 400)
+            })
+
+            // 🔥 BONUS 1: abort request saat modal ditutup
+            document.getElementById('modalPasien').addEventListener('hidden.bs.modal', () => {
+                if (currentController) {
+                    currentController.abort()
+                }
             })
         })
 

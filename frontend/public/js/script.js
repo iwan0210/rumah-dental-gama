@@ -10,6 +10,8 @@ const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
 let mode = 'add'
 let selectedTanggal = null
 let modal
+let debounceTimer = null
+let currentController = null
 
 const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
 const Default = {
@@ -76,12 +78,23 @@ const fetchData = async (page = 1) => {
         listData = data
         const tableBody = document.getElementById('table-body')
         tableBody.innerHTML = '' // Clear previous data
+
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="12" class="text-center">No Data Available.</td>
+                </tr>
+            `
+            return
+        }
+
         data.forEach((item, index) => {
             const age = getAge(item.tgl_lahir)
             const jenisKelamin = item.jk === 'L' ? 'Laki-laki' : item.jk === 'P' ? 'Perempuan' : 'Tidak diketahui';
             const row = document.createElement('tr')
             row.innerHTML = `
                 <td>${(pagination.page - 1) * limit + index + 1}</td>
+                <td>${item.no_rkm_medis}</td>
                 <td>${item.nama}</td>
                 <td>${item.nik}</td>
                 <td>${jenisKelamin}</td>
@@ -93,8 +106,9 @@ const fetchData = async (page = 1) => {
                 <td>${item.keluhan}</td>
                 <td><button class="btn btn-primary" onclick="editRegister('${item.id}')">Edit</button>
                 <button class="btn btn-danger" onclick="deleteRegister('${item.id}')">Delete</button>
-                <button class="btn btn-info" onclick="sendMessage('${item.id}')">Kirim WA</button>
+                <button class="btn btn-info" onclick="sendMessage('${item.id}')">Whatsapp</button>
                 ${item.total ? `<button class="btn btn-success" onclick="printRegister('${item.id}')">Print</button>` : ''}
+                <button class="btn btn-warning" onclick="printQueue('${item.id}')">Antrian</button>
                 </td>
             `
             tableBody.appendChild(row)
@@ -118,36 +132,130 @@ const fetchData = async (page = 1) => {
 
 const updatePagination = (page, totalPage) => {
     const paginationElement = document.getElementById('pagination')
-    paginationElement.innerHTML = `
-    <li class="page-item ${page === 1 ? 'disabled' : ''}">
-        <a id="prev-page" class="page-link" href="#" onclick="fetchData(${page - 1})">&laquo;</a>
-    </li>
-    `
-    for (let i = 1; i <= totalPage; i++) {
+    paginationElement.innerHTML = ''
+
+    const range = 2 // jumlah halaman di kiri/kanan
+
+    const createPageItem = (p, label = p, active = false, disabled = false) => {
         const li = document.createElement('li')
         li.classList.add('page-item')
+        if (active) li.classList.add('active')
+        if (disabled) li.classList.add('disabled')
 
         const a = document.createElement('a')
         a.classList.add('page-link')
         a.href = '#'
-        a.textContent = i
+        a.textContent = label
 
-        if (i === page) {
-            li.classList.add('active')
-            a.style.pointerEvents = 'none' // Disable click
+        if (!active && !disabled) {
+            a.onclick = () => fetchData(p)
         } else {
-            a.setAttribute('onclick', `fetchData(${i})`)
+            a.style.pointerEvents = 'none'
         }
 
         li.appendChild(a)
-        paginationElement.appendChild(li)
+        return li
     }
 
-    paginationElement.innerHTML += `
-    <li class="page-item ${page === totalPage ? 'disabled' : ''}">
-        <a id="next-page" class="page-link" href="#" onclick="fetchData(${page + 1})">&raquo;</a>
-    </li>
-    `
+    // Prev
+    paginationElement.appendChild(
+        createPageItem(page - 1, '«', false, page === 1)
+    )
+
+    let start = Math.max(1, page - range)
+    let end = Math.min(totalPage, page + range)
+
+    // First + ...
+    if (start > 1) {
+        paginationElement.appendChild(createPageItem(1))
+        if (start > 2) {
+            paginationElement.appendChild(createPageItem(null, '...', false, true))
+        }
+    }
+
+    // Middle pages
+    for (let i = start; i <= end; i++) {
+        paginationElement.appendChild(
+            createPageItem(i, i, i === page)
+        )
+    }
+
+    // ... + Last
+    if (end < totalPage) {
+        if (end < totalPage - 1) {
+            paginationElement.appendChild(createPageItem(null, '...', false, true))
+        }
+        paginationElement.appendChild(createPageItem(totalPage))
+    }
+
+    // Next
+    paginationElement.appendChild(
+        createPageItem(page + 1, '»', false, page === totalPage)
+    )
+}
+
+const updatePatientPagination = (page, totalPage) => {
+    const paginationElement = document.getElementById('pagination')
+    paginationElement.innerHTML = ''
+
+    const range = 2 // jumlah halaman di kiri/kanan
+
+    const createPageItem = (p, label = p, active = false, disabled = false) => {
+        const li = document.createElement('li')
+        li.classList.add('page-item')
+        if (active) li.classList.add('active')
+        if (disabled) li.classList.add('disabled')
+
+        const a = document.createElement('a')
+        a.classList.add('page-link')
+        a.href = '#'
+        a.textContent = label
+
+        if (!active && !disabled) {
+            a.onclick = () => fetchSearchPatient(p)
+        } else {
+            a.style.pointerEvents = 'none'
+        }
+
+        li.appendChild(a)
+        return li
+    }
+
+    // Prev
+    paginationElement.appendChild(
+        createPageItem(page - 1, '«', false, page === 1)
+    )
+
+    let start = Math.max(1, page - range)
+    let end = Math.min(totalPage, page + range)
+
+    // First + ...
+    if (start > 1) {
+        paginationElement.appendChild(createPageItem(1))
+        if (start > 2) {
+            paginationElement.appendChild(createPageItem(null, '...', false, true))
+        }
+    }
+
+    // Middle pages
+    for (let i = start; i <= end; i++) {
+        paginationElement.appendChild(
+            createPageItem(i, i, i === page)
+        )
+    }
+
+    // ... + Last
+    if (end < totalPage) {
+        if (end < totalPage - 1) {
+            paginationElement.appendChild(createPageItem(null, '...', false, true))
+        }
+        paginationElement.appendChild(createPageItem(totalPage))
+    }
+
+    // Next
+    paginationElement.appendChild(
+        createPageItem(page + 1, '»', false, page === totalPage)
+    )
 }
 
 const getAge = dateString => {
@@ -193,14 +301,47 @@ const clearForm = () => {
     document.getElementById('add-data-form').reset()
 }
 
-const insertData = async () => {
+const insertPatientData = async () => {
     const data = {
         nama: document.getElementById('name').value.trim(),
         nik: document.getElementById('nik').value.trim(),
         alamat: document.getElementById('alamat').value.trim(),
         nohp: document.getElementById('telepon').value.trim(),
         tglLahir: document.getElementById('tanggal-lahir').value,
-        jk: document.getElementById('jenis-kelamin').value,
+        jk: document.getElementById('jenis-kelamin').value
+    }
+
+    try {
+        await axios.post('/api/patient', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        clearForm();
+
+        window.location = '/admin/patient'
+    } catch (error) {
+        console.error('Error submitting form:', error)
+
+        if (error.response) {
+            const status = error.response.status
+            const message = error.response.data?.message || 'Terjadi kesalahan dari server'
+
+            alert(`Error ${status}: ${message}`)
+
+        } else if (error.request) {
+            alert('Server tidak merespon. Periksa koneksi atau server.')
+
+        } else {
+            alert(`Error: ${error.message}`)
+        }
+    }
+}
+
+const insertData = async () => {
+    const data = {
+        no_rkm_medis: document.getElementById('no_rkm_medis').value,
         tanggalDaftar: document.getElementById('tanggal-periksa').value,
         keluhan: document.getElementById('keluhan').value.trim(),
         diagnosa: document.getElementById('diagnosa').value.trim(),
@@ -220,23 +361,33 @@ const insertData = async () => {
 
         window.location = '/admin/'
     } catch (error) {
-        console.error('Error submitting form:', error);
-        alert('Gagal menyimpan data. Silakan coba lagi.');
+        console.error('Error submitting form:', error)
+
+        if (error.response) {
+            const status = error.response.status
+            const message = error.response.data?.message || 'Terjadi kesalahan dari server'
+
+            alert(`Error ${status}: ${message}`)
+
+        } else if (error.request) {
+            alert('Server tidak merespon. Periksa koneksi atau server.')
+
+        } else {
+            alert(`Error: ${error.message}`)
+        }
     }
 }
 
 const editRegister = registerId => {
-    window.location = '/admin/patient/edit/' + registerId
+    window.location = '/admin/register/edit/' + registerId
+}
+
+const editPatient = patientId => {
+    window.location = '/admin/patient/edit/' + patientId
 }
 
 const updateData = async (id) => {
     const data = {
-        nama: document.getElementById('name').value.trim(),
-        nik: document.getElementById('nik').value.trim(),
-        alamat: document.getElementById('alamat').value.trim(),
-        nohp: document.getElementById('telepon').value.trim(),
-        tglLahir: document.getElementById('tanggal-lahir').value,
-        jk: document.getElementById('jenis-kelamin').value,
         tanggalDaftar: document.getElementById('tanggal-periksa').value,
         keluhan: document.getElementById('keluhan').value.trim(),
         diagnosa: document.getElementById('diagnosa').value.trim(),
@@ -255,6 +406,33 @@ const updateData = async (id) => {
         clearForm();
 
         window.location = '/admin/'
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        alert('Gagal menyimpan data. Silakan coba lagi.');
+    }
+}
+
+const updatePatientData = async (id) => {
+    const data = {
+        nama: document.getElementById('name').value.trim(),
+        nik: document.getElementById('nik').value.trim(),
+        alamat: document.getElementById('alamat').value.trim(),
+        nohp: document.getElementById('telepon').value.trim(),
+        tglLahir: document.getElementById('tanggal-lahir').value,
+        jk: document.getElementById('jenis-kelamin').value
+    }
+
+    try {
+        await axios.put('/api/patient/' + id, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        clearForm();
+
+        alert('Berhasil mengubah data pasien.');
+        window.location = '/admin/patient'
     } catch (error) {
         console.error('Error submitting form:', error);
         alert('Gagal menyimpan data. Silakan coba lagi.');
@@ -333,7 +511,7 @@ const printRegister = id => {
     const htmlContent = `
         <div class="center">
             <h3>Rumah Dental Gama</h3>
-            <div>Gg. Kasuari, Bogoran, Kauman, Kabupaten Batang</div>
+            <div>Jl. Gajah Mada Gg. Kasuari No. 15 Bogoran, Kauman, Batang</div>
             <div>Telp: 0823-1454-1887</div>
             <div class="line"></div>
             <strong>INVOICE</strong>
@@ -342,7 +520,7 @@ const printRegister = id => {
         <div class="line"></div>
         <table>
             <tr><td class="label">Nama</td><td>:</td><td class="value">${item.nama}</td></tr>
-            <tr><td class="label">NIK</td><td>:</td><td class="value">${item.nik}</td></tr>
+            <tr><td class="label">No. RM</td><td>:</td><td class="value">${item.no_rkm_medis}</td></tr>
             <tr><td class="label">Alamat</td><td>:</td><td class="value">${item.alamat}</td></tr>
             <tr><td class="label">No HP</td><td>:</td><td class="value">${item.nohp}</td></tr>
             <tr><td class="label">Tgl Periksa</td><td>:</td><td class="value">${item.tanggal}</td></tr>
@@ -376,6 +554,119 @@ const printRegister = id => {
     }
 
     waitForLoad()
+}
+
+const printQueue = id => {
+
+    const item = listData.find(item => item.id === id)
+    if (!item) {
+        alert('Data tidak ditemukan')
+        return
+    }
+
+    const win = window.open('', '_blank')
+    if (!win) {
+        alert('Popup diblokir. Harap izinkan popup di browser Anda.')
+        return
+    }
+
+    const style = `
+        body {
+            font-family: monospace;
+            font-size: 12px;
+            width: 80mm;
+            padding: 5px;
+        }
+        .center { text-align: center; }
+        .big {
+            font-size: 38px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .line {
+            border-top: 1px dashed #000;
+            margin: 6px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+        .label { width: 40%; }
+        .value { width: 60%; }
+    `
+
+    // format tanggal dari item
+    const tgl = new Date(item.tanggal)
+    const tanggal = tgl.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    })
+
+    const keluhan = (item.keluhan || '-').replace(/\n/g, '<br>')
+
+    const html = `
+        <div class="center">
+            <h3>Rumah Dental Gama</h3>
+            <div>Jl. Gajah Mada Gg. Kasuari No. 15 Bogoran, Kauman, Batang</div>
+            <div>Telp: 0823-1454-1887</div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="center">
+            <div>Nomor Antrian</div>
+            <div class="big">${item.no_reg || '-'}</div>
+        </div>
+
+        <div class="line"></div>
+
+        <table>
+            <tr><td class="label">Nama</td><td>:</td><td class="value">${item.nama}</td></tr>
+            <tr><td class="label">No RM</td><td>:</td><td class="value">${item.no_rkm_medis}</td></tr>
+            <tr><td class="label">Tgl Lahir</td><td>:</td><td class="value">${item.tgl_lahir}</td></tr>
+            <tr><td class="label">JK</td><td>:</td><td class="value">${item.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</td></tr>
+            <tr><td class="label">Alamat</td><td>:</td><td class="value">${item.alamat}</td></tr>
+            <tr><td class="label">Tanggal Periksa</td><td>:</td><td class="value">${tanggal}</td></tr>
+        </table>
+
+        <div class="line"></div>
+
+        <div class="center">
+            Harap menunggu panggilan<br>
+            sesuai nomor antrian
+        </div>
+
+        <div class="line"></div>
+
+        <div class="center">-- Terima Kasih --</div>
+    `
+
+    const wait = () => {
+        if (win.document.readyState === 'complete') {
+            const doc = win.document
+            doc.head.innerHTML = ''
+            doc.body.innerHTML = ''
+
+            const styleEl = doc.createElement('style')
+            styleEl.textContent = style
+            doc.head.appendChild(styleEl)
+
+            doc.body.innerHTML = html
+
+            win.focus()
+            win.print()
+            win.onafterprint = () => win.close()
+        } else {
+            setTimeout(wait, 50)
+        }
+    }
+
+    wait()
 }
 
 const searchPatient = async () => {
@@ -475,7 +766,7 @@ const fetchPatientMonthlyReport = async () => {
     const selectedMonth = document.getElementById('select-month').value.trim()
 
     try {
-        const response = await axios.get('/api/register/patient/monthly', {
+        const response = await axios.get('/api/register/finance/monthly', {
             params: {
                 year: selectedYear,
                 month: selectedMonth
@@ -619,7 +910,7 @@ const exportExcelDaily = async () => {
     }
 }
 
-const fetchSearchPatient = async () => {
+const fetchSearchRegister = async () => {
     const query = document.getElementById('input-search').value.trim()
 
     if (query.length < 3) {
@@ -645,7 +936,7 @@ const fetchSearchPatient = async () => {
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="15" class="text-center">No Data Available.</td>
+                    <td colspan="16" class="text-center">No Data Available.</td>
                 </tr>
             `
             return
@@ -657,6 +948,7 @@ const fetchSearchPatient = async () => {
             const row = document.createElement('tr')
             row.innerHTML = `
                 <td>${index + 1}</td>
+                <td>${item.no_rkm_medis}</td>
                 <td>${item.nama}</td>
                 <td>${item.nik}</td>
                 <td>${jenisKelamin}</td>
@@ -671,7 +963,7 @@ const fetchSearchPatient = async () => {
                 <td>${item.obat}</td>
                 <td>Rp ${item.total.toLocaleString('id-ID')}</td>
                 <td><button class="btn btn-primary" onclick="editRegister('${item.id}')">Edit</button>
-                <button class="btn btn-danger" onclick="deleteRegister('${item.id}')">Delete</button>
+                <button class="btn btn-danger" onclick="deleteRegister('${item.id}')">Delete</button></td>
             `
             tableBody.appendChild(row)
         })
@@ -681,9 +973,70 @@ const fetchSearchPatient = async () => {
     }
 }
 
+const fetchSearchPatient = async (page = 1) => {
+    const query = document.getElementById('input-search').value.trim()
+
+    try {
+        const response = await axios.get('/api/patient', {
+            params: {
+                keyword: query,
+                page: page,
+                limit: limit
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const { data, pagination } = response.data
+
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="text-center">No Data Available.</td>
+                </tr>
+            `
+            return
+        }
+
+        data.forEach((item, index) => {
+            const age = getAge(item.tgl_lahir)
+            const jenisKelamin = item.jk === 'L' ? 'Laki-laki' : item.jk === 'P' ? 'Perempuan' : 'Tidak diketahui';
+            const row = document.createElement('tr')
+            row.innerHTML = `
+                <td>${(pagination.page - 1) * limit + index + 1}</td>
+                <td>${item.no_rkm_medis}</td>
+                <td>${item.nama}</td>
+                <td>${item.nik}</td>
+                <td>${jenisKelamin}</td>
+                <td>${item.tgl_lahir.split('T')[0]} / ${age} Th</td>
+                <td>${item.alamat}</td>
+                <td>${item.nohp}</td>
+                <td><button class="btn btn-primary" onclick="editPatient('${item.no_rkm_medis}')">Edit</button></td>
+            `
+            tableBody.appendChild(row)
+        })
+
+        const paginationElement = document.getElementById('pagination')
+        paginationElement.innerHTML = '' // Clear previous pagination
+
+
+        currentPage = pagination.page
+        const pageInfo = document.getElementById('page-info')
+        pageInfo.innerHTML = `Page ${pagination.page} of ${pagination.totalPage}`
+        updatePatientPagination(pagination.page, pagination.totalPage)
+    } catch (error) {
+        console.error('Error fetching data:', error)
+        alert('Error fetching data. Please try again later.')
+    }
+}
+
 const fetchPatientDailyReport = async () => {
     try {
-        const response = await axios.get('/api/register/patient/daily', {
+        const response = await axios.get('/api/register/finance/daily', {
             params: {
                 startDate: startDate,
                 endDate: endDate
@@ -806,8 +1159,20 @@ const addUser = async () => {
         clearForm();
         location.href = '/admin/users';
     } catch (error) {
-        console.error('Error adding user:', error);
-        alert('Gagal menambahkan user. Silakan coba lagi.');
+        console.error('Error submitting form:', error)
+
+        if (error.response) {
+            const status = error.response.status
+            const message = error.response.data?.message || 'Terjadi kesalahan dari server'
+
+            alert(`Error ${status}: ${message}`)
+
+        } else if (error.request) {
+            alert('Server tidak merespon. Periksa koneksi atau server.')
+
+        } else {
+            alert(`Error: ${error.message}`)
+        }
     }
 }
 
@@ -1036,3 +1401,88 @@ const updateHolidayPagination = (page, totalPage) => {
     </li>
     `
 }
+
+function openModalPasien() {
+    modal.show()
+    fetchPasien('')
+}
+
+async function fetchPasien(keyword) {
+    const tbody = document.getElementById('result-pasien')
+
+    try {
+        // abort request sebelumnya
+        if (currentController) {
+            currentController.abort()
+        }
+
+        // buat controller BARU (lokal)
+        const controller = new AbortController()
+        currentController = controller
+
+        // loading UI
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center">Loading...</td></tr>`
+
+        const res = await axios.get('/api/patient/search', {
+            params: { keyword },
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            signal: currentController.signal
+        })
+
+        // ❗ penting: pastikan ini request terakhir
+        if (controller !== currentController) return
+
+        renderPasien(res.data.data)
+
+    } catch (err) {
+        // kalau di-cancel → skip
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return
+
+        console.error(err)
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Terjadi kesalahan</td></tr>`
+    }
+}
+
+// render table
+function renderPasien(list) {
+    const tbody = document.getElementById('result-pasien')
+
+    if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center">Tidak ditemukan</td></tr>`
+        return
+    }
+
+    tbody.innerHTML = list.map(p => `
+        <tr>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick='selectPasien(${JSON.stringify(p)})'>
+                    Pilih
+                </button>
+            </td>
+            <td>${p.no_rkm_medis}</td>
+            <td>${p.nama}</td>
+            <td>${p.nik}</td>
+            <td>${p.jk}</td>
+            <td>${p.tgl_lahir}</td>
+            <td>${p.nohp}</td>
+            <td>${p.alamat}</td>
+        </tr>
+    `).join('')
+}
+
+// isi form
+function selectPasien(p) {
+    document.getElementById('no_rkm_medis').value = p.no_rkm_medis
+    document.getElementById('name').value = p.nama
+    document.getElementById('nik').value = p.nik
+    document.getElementById('alamat').value = p.alamat
+    document.getElementById('telepon').value = p.nohp
+    document.getElementById('tanggal-lahir').value = p.tgl_lahir
+    document.getElementById('jenis-kelamin').value =
+    p.jk === 'L' ? 'Laki-laki' : 'Perempuan'
+
+    modal.hide()
+}
+

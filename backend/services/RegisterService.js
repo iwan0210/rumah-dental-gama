@@ -8,29 +8,29 @@ class RegisterClass {
         this._pool = pool
     }
 
-    async register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan) {
+    async register(noRM, tanggalDaftar, keluhan) {
 
-        await this.checkDuplicate(nik, tanggalDaftar)
+        await this.checkDuplicate(noRM, tanggalDaftar)
 
         const id = nanoid(16)
         const queueNumber = await this.getQueueNumber(tanggalDaftar)
-        await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [id, queueNumber, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan])
+        await this._pool.query("INSERT INTO registrasi (id, no_reg, no_rkm_medis, tanggal, keluhan) VALUES (?, ?, ?, ?, ?)",
+            [id, queueNumber, noRM, tanggalDaftar, keluhan])
 
         return [id, queueNumber]
     }
 
-    async insertCompleteRegister(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total) {
+    async insertCompleteRegister(noRM, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total) {
         const id = nanoid(16)
         const queueNumber = await this.getQueueNumber(tanggalDaftar)
-        await this._pool.query("INSERT INTO registrasi (id, no_reg, nama, nik, jk, tgl_lahir, nohp, alamat, tanggal, keluhan, diagnosa, tindakan, obat, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [id, queueNumber, nama, nik, jk, tglLahir, nohp, alamat, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total])
+        await this._pool.query("INSERT INTO registrasi (id, no_reg, no_rkm_medis, tanggal, keluhan, diagnosa, tindakan, obat, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [id, queueNumber, noRM, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total])
         return id
     }
 
     async getAllRegister(page, limit, startDate, endDate) {
         const offset = (page - 1) * limit
-        const [result] = await this._pool.query("SELECT * FROM registrasi WHERE tanggal BETWEEN ? AND ? ORDER BY tanggal DESC, no_reg DESC LIMIT ? OFFSET ?", [startDate, endDate, parseInt(limit), offset])
+        const [result] = await this._pool.query("SELECT registrasi.*, pasien.* FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis WHERE tanggal BETWEEN ? AND ? ORDER BY tanggal DESC, no_reg DESC LIMIT ? OFFSET ?", [startDate, endDate, parseInt(limit), offset])
         const [count] = await this._pool.query("SELECT COUNT(*) as total FROM registrasi WHERE tanggal BETWEEN ? AND ?", [startDate, endDate])
         const total = count[0].total
         const totalPage = Math.ceil(total / limit) || 1
@@ -47,7 +47,7 @@ class RegisterClass {
 
     async getRegisterById(id) {
 
-        const [result] = await this._pool.query("SELECT * FROM registrasi WHERE id = ?", [id])
+        const [result] = await this._pool.query("SELECT registrasi.*, pasien.* FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis WHERE id = ?", [id])
 
         if (result.length < 1) {
             throw new NotFoundError(`Register dengan id ${id} tidak ditemukan`)
@@ -64,9 +64,9 @@ class RegisterClass {
         }
     }
 
-    async updateRegisterById(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total) {
-        const [result] = await this._pool.query("UPDATE registrasi SET nama = ?, nik = ?, jk = ?, tgl_lahir = ?, alamat = ?, nohp = ?, tanggal = ?, keluhan = ?, diagnosa = ?, tindakan = ?, obat = ?, total = ? WHERE id = ?",
-            [nama, nik, jk, tglLahir, alamat, nohp, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total, id])
+    async updateRegisterById(id, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total) {
+        const [result] = await this._pool.query("UPDATE registrasi SET tanggal = ?, keluhan = ?, diagnosa = ?, tindakan = ?, obat = ?, total = ? WHERE id = ?",
+            [tanggalDaftar, keluhan, diagnosa, tindakan, obat, total, id])
 
         if (result.affectedRows === 0) {
             throw new NotFoundError(`Register dengan id ${id} tidak ditemukan`)
@@ -115,16 +115,6 @@ class RegisterClass {
         }
     }
 
-    async getPatientByNik(nik) {
-        const [result] = await this._pool.query("SELECT nama, jk, tgl_lahir, alamat, nohp FROM registrasi WHERE nik = ? order by tanggal desc limit 1", [nik])
-
-        if (result.length < 1) {
-            throw new NotFoundError(`Pasien dengan nik ${nik} tidak ditemukan`)
-        }
-
-        return result[0]
-    }
-
     async getFinanceByYear(year) {
         const [result] = await this._pool.query(`
             SELECT 
@@ -154,10 +144,11 @@ class RegisterClass {
 
     async getAllRegisterByYearMonth(year, month) {
         const [result] = await this._pool.query(`SELECT 
-            id, nama, nik, jk, tgl_lahir, nohp, alamat, no_reg, tanggal,
-            keluhan, diagnosa, tindakan, obat,
-            IFNULL(total, 0) AS total
+            registrasi.id, pasien.nama, pasien.no_rkm_medis, pasien.nik, pasien.jk, pasien.tgl_lahir, pasien.nohp, pasien.alamat, registrasi.no_reg, registrasi.tanggal,
+            registrasi.keluhan, registrasi.diagnosa, registrasi.tindakan, registrasi.obat,
+            IFNULL(registrasi.total, 0) AS total
         FROM registrasi 
+        join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis
         WHERE YEAR(tanggal) = ? AND MONTH(tanggal) = ?
         ORDER BY tanggal ASC, no_reg ASC`, [year, month])
 
@@ -174,7 +165,7 @@ class RegisterClass {
     }
 
     async getPatientByNameOrNik(nameOrNik) {
-        const [result] = await this._pool.query("SELECT * FROM registrasi WHERE nama LIKE ? OR nik LIKE ? order by tanggal desc, no_reg asc", [`%${nameOrNik}%`, `%${nameOrNik}%`])
+        const [result] = await this._pool.query("SELECT registrasi.*, pasien.* FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis WHERE pasien.nama LIKE ? OR pasien.nik LIKE ? order by tanggal desc, no_reg asc", [`%${nameOrNik}%`, `%${nameOrNik}%`])
 
         const cleaned = result.map(row => ({
             ...row,
@@ -187,8 +178,8 @@ class RegisterClass {
         return cleaned
     }
 
-    async checkDuplicate(nik, tanggal) {
-        const [result] = await this._pool.query("SELECT id FROM registrasi WHERE nik = ? and tanggal = ?", [nik, tanggal])
+    async checkDuplicate(noRM, tanggal) {
+        const [result] = await this._pool.query("SELECT id FROM registrasi WHERE no_rkm_medis = ? and tanggal = ?", [noRM, tanggal])
 
         if (result.length > 0) {
             throw new InvariantError("Pasien sudah terdaftar pada tanggal tersebut")
@@ -197,10 +188,11 @@ class RegisterClass {
 
     async getAllRegisterByRangeDate(startDate, endDate) {
         const [result] = await this._pool.query(`SELECT 
-            id, nama, nik, jk, tgl_lahir, nohp, alamat, no_reg, tanggal,
-            keluhan, diagnosa, tindakan, obat,
-            IFNULL(total, 0) AS total
+            registrasi.id, pasien.nama, pasien.no_rkm_medis, pasien.nik, pasien.jk, pasien.tgl_lahir, pasien.nohp, pasien.alamat, registrasi.no_reg, registrasi.tanggal,
+            registrasi.keluhan, registrasi.diagnosa, registrasi.tindakan, registrasi.obat,
+            IFNULL(registrasi.total, 0) AS total
         FROM registrasi 
+        join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis
         WHERE tanggal BETWEEN ? AND ?
         ORDER BY tanggal ASC, no_reg ASC`, [startDate, endDate])
 

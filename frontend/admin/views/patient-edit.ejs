@@ -1,0 +1,111 @@
+<%- include('partials/header') %>
+
+    <!--begin::App Main-->
+    <main class="app-main">
+        <!--begin::App Content Header-->
+        <div class="app-content-header">
+            <!--begin::Container-->
+            <div class="container-fluid">
+                <!--begin::Row-->
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h3 class="mb-0">Tambah Data pasien</h3>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-end">
+                            <li class="breadcrumb-item"><a href="#">Tambah Data</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                        </ol>
+                    </div>
+
+                    <!--begin::table-->
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Tambah Data pasien</h3>
+                            </div>
+                            <div class="card-body p-0 m-3">
+                                <form id="add-data-form">
+                                    <div class="row">
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="name" class="form-label">Nomor Rekam Medis</label>
+                                            <input type="text" class="form-control" id="name" placeholder="No.RM"
+                                                value="<%= no_rkm_medis %>" disabled>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="name" class="form-label">Nama</label>
+                                            <input type="text" class="form-control" id="name" placeholder="Nama"
+                                                value="<%= nama %>" required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="nik" class="form-label">NIK</label>
+                                            <input type="text" class="form-control" id="nik" placeholder="NIK"
+                                                value="<%= nik %>" required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="alamat" class="form-label">Alamat</label>
+                                            <input type="text" class="form-control" id="alamat" placeholder="Alamat"
+                                                value="<%= alamat %>" required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="telepon" class="form-label">Nomor Telepon</label>
+                                            <input type="text" class="form-control" id="telepon" value="<%= nohp %>"
+                                                placeholder="Nomor Telepon" required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="tanggal-lahir" class="form-label">Tanggal Lahir</label>
+                                            <input type="date" class="form-control" id="tanggal-lahir"
+                                                value="<%= tgl_lahir %>" required>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label for="jenis-kelamin" class="form-label">Jenis Kelamin</label>
+                                            <select class="form-select" id="jenis-kelamin" required>
+                                                <option value="L" <%= jk==='L' ? 'selected' : '' %>
+                                                    >Laki-laki</option>
+                                                <option value="P" <%= jk==='P' ? 'selected' : '' %>
+                                                    >Perempuan</option>
+                                            </select>
+                                        </div>
+                                </form>
+                            </div>
+                            <div class="card-footer clearfix">
+                                <div class="float-start">
+                                    <Button class="btn btn-danger" onclick="clearForm()">Kosongkan</Button>
+                                    <Button class="btn btn-primary" type="submit" form="add-data-form">Simpan</Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::table-->
+
+                </div>
+                <!--end::Row-->
+            </div>
+            <!--end::Container-->
+        </div>
+        <!--end::App Content Header-->
+        <!--begin::App Content-->
+        <div class="app-content">
+            <!--begin::Container-->
+            <div class="container-fluid">
+
+            </div>
+            <!--end::Container-->
+        </div>
+        <!--end::App Content-->
+    </main>
+    <!--end::App Main-->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            document.getElementById('add-data-form').addEventListener('submit', e => {
+                e.preventDefault()
+
+                updatePatientData('<%= no_rkm_medis %>')
+            })
+        })
+
+    </script>
+
+    <%- include('partials/footer') %>

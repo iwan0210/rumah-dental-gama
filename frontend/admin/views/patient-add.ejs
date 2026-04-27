@@ -9,7 +9,7 @@
                 <!--begin::Row-->
                 <div class="row">
                     <div class="col-sm-6">
-                        <h3 class="mb-0">Tambah Data</h3>
+                        <h3 class="mb-0">Tambah Data pasien</h3>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
@@ -22,7 +22,7 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">Tambah Data Pasien</h3>
+                                <h3 class="card-title">Tambah Data pasien</h3>
                             </div>
                             <div class="card-body p-0 m-3">
                                 <form id="add-data-form">
@@ -34,12 +34,7 @@
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="nik" class="form-label">NIK</label>
-                                            <div class="input-group">
-                                                <input type="text" class="form-control" id="nik" placeholder="NIK"
-                                                    required>
-                                                <button class="btn btn-secondary" id="nik-btn" type="button"
-                                                    onclick="searchPatient()">Cari pasien</button>
-                                            </div>
+                                            <input type="text" class="form-control" id="nik" placeholder="NIK" required>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="alamat" class="form-label">Alamat</label>
@@ -61,43 +56,6 @@
                                                 <option value="L">Laki-laki</option>
                                                 <option value="P">Perempuan</option>
                                             </select>
-                                        </div>
-                                        <div class="col-sm-6 mb-3">
-                                            <label for="tanggal-periksa" class="form-label">Tanggal Periksa</label>
-                                            <div class="input-group">
-                                                <input type="date" class="form-control" id="tanggal-periksa" required>
-                                                <button class="btn btn-secondary" id="today-btn" type="button"
-                                                    onclick="today()">Hari Ini</button>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6 mb-3">
-                                            <label for="keluhan" class="form-label">Keluhan</label>
-                                            <textarea class="form-control" id="keluhan" rows="3" placeholder="Keluhan"
-                                                required></textarea>
-                                        </div>
-                                        <div class="col-sm-6 mb-3">
-                                            <label for="diagnosa" class="form-label">Diagnosa</label>
-                                            <textarea class="form-control" id="diagnosa" rows="3"
-                                                placeholder="Diagnosa"></textarea>
-                                        </div>
-                                        <div class="col-sm-6 mb-3">
-                                            <label for="tindakan" class="form-label">Tindakan</label>
-                                            <textarea class="form-control" id="tindakan" rows="3"
-                                                placeholder="Tindakan"></textarea>
-                                        </div>
-                                        <div class="col-sm-6 mb-3">
-                                            <label for="obat" class="form-label">obat</label>
-                                            <textarea class="form-control" id="obat" rows="3"
-                                                placeholder="Obat"></textarea>
-                                        </div>
-                                        <div class="col-sm-6 mb-3">
-                                            <label for="biaya" class="form-label">Biaya</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">Rp</span>
-                                                <input type="text" class="form-control no-arrows" id="biaya"
-                                                    placeholder="Biaya" required>
-                                            </div>
-
                                         </div>
                                 </form>
                             </div>
@@ -131,20 +89,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const inputBiaya = document.getElementById('biaya')
-
-            inputBiaya.addEventListener('input', e => {
-                let value = e.target.value.replace(/[^\d]/g, '');  // Remove non-numeric characters
-                if (value) {
-                    // Format with commas as the user types
-                    e.target.value = new Intl.NumberFormat('id-ID').format(value);
-                }
-            })
 
             document.getElementById('add-data-form').addEventListener('submit', e => {
                 e.preventDefault()
 
-                insertData()
+                insertPatientData()
             })
         })
 

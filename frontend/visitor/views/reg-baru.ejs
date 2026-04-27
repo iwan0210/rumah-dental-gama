@@ -235,7 +235,7 @@
       };
 
       // Send data to the server via Axios
-      axios.post('/api/register', formData)
+      axios.post('/api/register/new', formData)
         .then((response) => {
           window.location.href = '/register/' + response.data.data.id; // Redirect after successful submission
         })

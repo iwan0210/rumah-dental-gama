@@ -1,17 +1,18 @@
 class RegisterHandler {
-    constructor(service, validator, axios, ExcelJS) {
+    constructor(service, validator, axios, ExcelJS, patient) {
         this._service = service
         this._validator = validator
         this._axios = axios
         this._ExcelJS = ExcelJS
+        this._patient = patient
 
         this.postRegisterHandler = this.postRegisterHandler.bind(this)
+        this.postRegisterNewHandler = this.postRegisterNewHandler.bind(this)
         this.getAllRegisterHandler = this.getAllRegisterHandler.bind(this)
         this.getRegisterByIdHandler = this.getRegisterByIdHandler.bind(this)
         this.deleteRegisterByIdHandler = this.deleteRegisterByIdHandler.bind(this)
         this.updateRegisterByIdHandler = this.updateRegisterByIdHandler.bind(this)
         this.postCompleteRegisterHandler = this.postCompleteRegisterHandler.bind(this)
-        this.getRegisterByNikHandler = this.getRegisterByNikHandler.bind(this)
         this.getFinanceByYearHandler = this.getFinanceByYearHandler.bind(this)
         this.getAllRegisterByYearMonthHandler = this.getAllRegisterByYearMonthHandler.bind(this)
         this.getExportExcelMonthly = this.getExportExcelMonthly.bind(this)
@@ -23,13 +24,34 @@ class RegisterHandler {
 
     async postRegisterHandler(req, res, next) {
         try {
-            const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan } = req.body
             this._validator.validateAddRegisterPayload(req.body)
-            const [id, queueNumber] = await this._service.register(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan)
+            const { no_rkm_medis, tanggalDaftar, keluhan } = req.body
+            const [id, queueNumber] = await this._service.register(no_rkm_medis, tanggalDaftar, keluhan)
 
-            this._sendWhatsappMessage(
-                id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, queueNumber
-            ).catch(err => console.log("WA error ignored:", err.message))
+            this._sendWhatsappMessage(id).catch(err => console.log("WA error ignored:", err.message))
+
+            const response = {
+                error: false,
+                status: 201,
+                message: 'Success',
+                data: {
+                    id
+                }
+            }
+            res.status(201).json(response)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async postRegisterNewHandler(req, res, next) {
+        try {
+            this._validator.validateAddRegisterNewPayload(req.body)
+            const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan } = req.body
+            const newRM = await this._patient.addPatient(nama, nik, jk, tglLahir, nohp, alamat)
+            const [id, queueNumber] = await this._service.register(newRM, tanggalDaftar, keluhan)
+
+            this._sendWhatsappMessage(id).catch(err => console.log("WA error ignored:", err.message))
 
             const response = {
                 error: false,
@@ -47,8 +69,8 @@ class RegisterHandler {
 
     async getAllRegisterHandler(req, res, next) {
         try {
-            const { page = 1, limit = 10, startDate, endDate } = req.query
             this._validator.validateGetAllRegisterPayload(req.query)
+            const { page = 1, limit = 10, startDate, endDate } = req.query
             const { result, total, totalPage, nextPage, prevPage } = await this._service.getAllRegister(page, limit, startDate, endDate)
             const response = {
                 error: false,
@@ -106,9 +128,9 @@ class RegisterHandler {
     async updateRegisterByIdHandler(req, res, next) {
         try {
             const { id } = req.params
-            const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total } = req.body
             this._validator.validatePutRegisterPayload(req.body)
-            await this._service.updateRegisterById(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total)
+            const { tanggalDaftar, keluhan, diagnosa, tindakan, obat, total } = req.body
+            await this._service.updateRegisterById(id, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total)
             const response = {
                 error: false,
                 status: 200,
@@ -122,9 +144,9 @@ class RegisterHandler {
 
     async postCompleteRegisterHandler(req, res, next) {
         try {
-            const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total } = req.body
-            this._validator.validatePutRegisterPayload(req.body)
-            const id = await this._service.insertCompleteRegister(nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total)
+            this._validator.validateAddRegisterCompletePayload(req.body)
+            const { no_rkm_medis, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total } = req.body
+            const id = await this._service.insertCompleteRegister(no_rkm_medis, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total)
             const response = {
                 error: false,
                 status: 201,
@@ -134,22 +156,6 @@ class RegisterHandler {
                 }
             }
             res.status(201).json(response)
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    async getRegisterByNikHandler(req, res, next) {
-        try {
-            const { nik } = req.params
-            const result = await this._service.getPatientByNik(nik)
-            const response = {
-                error: false,
-                status: 200,
-                message: 'Success',
-                data: result
-            }
-            res.status(200).json(response)
         } catch (error) {
             next(error)
         }
@@ -171,28 +177,30 @@ class RegisterHandler {
         }
     }
 
-    async _sendWhatsappMessage(id, nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan, noReg) {
-        const age = this.getAge(tglLahir)
-        const jenisKelamin = jk === 'L' ? 'Laki-laki' : 'Perempuan'
+    async _sendWhatsappMessage(id) {
+        const result = await this._service.getRegisterById(id)
+        const age = this.getAge(result.tgl_lahir)
+        const jenisKelamin = result.jk === 'L' ? 'Laki-laki' : 'Perempuan'
         const message = `*🦷 Rumah Dental Gama - Pendaftaran Berhasil ✅*\n\n` +
-            `Halo *${nama}*,\n` +
+            `Halo *${result.nama}*,\n` +
             `Terima kasih telah melakukan pendaftaran di *Rumah Dental Gama*.\n\n` +
-            `📅 *Tanggal Daftar:* ${tanggalDaftar}\n\n` +
-            `🔢 *Nomor Antrian:* ${noReg}\n\n` +
+            `📅 *Tanggal Daftar:* ${result.tanggal}\n\n` +
+            `🔢 *Nomor Antrian:* ${result.no_reg}\n\n` +
             `📌 *Data Anda:*\n` +
-            `• NIK: ${nik}\n` +
-            `• No. HP: ${nohp}\n` +
+            `• No. RM: ${result.no_rkm_medis}\n` +
+            `• NIK: ${result.nik}\n` +
+            `• No. HP: ${result.nohp}\n` +
             `• Jenis Kelamin: ${jenisKelamin}\n` +
-            `• Tanggal Lahir: ${tglLahir}\n` +
+            `• Tanggal Lahir: ${result.tgl_lahir}\n` +
             `• Umur: ${age} tahun\n` +
-            `• Alamat: ${alamat}\n` +
-            `• Keluhan: ${keluhan}\n\n` +
+            `• Alamat: ${result.alamat}\n` +
+            `• Keluhan: ${result.keluhan}\n\n` +
             `🔗 *Detail Pendaftaran:*\n` +
             `https://${process.env.HOST}/register/${id}\n\n` +
             `🙏 *Mohon datang tepat waktu sesuai jadwal. Kami tunggu kehadiran Anda di Rumah Dental Gama.*`
 
         try {
-            await this._axios.post('https://api.fonnte.com/send/', { target: nohp, message: message },
+            await this._axios.post('https://api.fonnte.com/send/', { target: result.nohp, message: message },
                 {
                     headers: {
                         Authorization: process.env.WHATSAPP_TOKEN
@@ -237,8 +245,9 @@ class RegisterHandler {
             worksheet.columns = [
                 { header: 'No', key: 'no', width: 5 },
                 { header: 'ID', key: 'id', width: 10 },
-                { header: 'No Reg', key: 'no_reg', width: 15 },
+                { header: 'No Reg', key: 'no_reg', width: 10 },
                 { header: 'Nama', key: 'nama', width: 25 },
+                { header: 'No. RM', key: 'no_rkm_medis', width: 20 },
                 { header: 'NIK', key: 'nik', width: 20 },
                 { header: 'JK', key: 'jk', width: 10 },
                 { header: 'Tanggal Lahir', key: 'tgl_lahir', width: 20 },
@@ -286,7 +295,7 @@ class RegisterHandler {
 
             const startRow = 2
             const endRow = data.length + 1
-            const totalColIndex = 15
+            const totalColIndex = 16
 
             const totalRow = worksheet.addRow([])
 
@@ -295,7 +304,7 @@ class RegisterHandler {
             totalRow.getCell(totalColIndex - 1).alignment = { horizontal: 'right' }
 
             totalRow.getCell(totalColIndex).value = {
-                formula: `SUM(O${startRow}:O${endRow})`,
+                formula: `SUM(P${startRow}:P${endRow})`,
                 result: data.reduce((sum, item) => sum + (item.total || 0), 0),
             }
             totalRow.getCell(totalColIndex).font = { bold: true }
@@ -338,8 +347,9 @@ class RegisterHandler {
             worksheet.columns = [
                 { header: 'No', key: 'no', width: 5 },
                 { header: 'ID', key: 'id', width: 10 },
-                { header: 'No Reg', key: 'no_reg', width: 15 },
+                { header: 'No Reg', key: 'no_reg', width: 10 },
                 { header: 'Nama', key: 'nama', width: 25 },
+                { header: 'No. RM', key: 'no_rkm_medis', width: 10 },
                 { header: 'NIK', key: 'nik', width: 20 },
                 { header: 'JK', key: 'jk', width: 10 },
                 { header: 'Tanggal Lahir', key: 'tgl_lahir', width: 20 },
@@ -387,7 +397,7 @@ class RegisterHandler {
 
             const startRow = 2
             const endRow = data.length + 1
-            const totalColIndex = 15
+            const totalColIndex = 16
 
             const totalRow = worksheet.addRow([])
 
@@ -396,7 +406,7 @@ class RegisterHandler {
             totalRow.getCell(totalColIndex - 1).alignment = { horizontal: 'right' }
 
             totalRow.getCell(totalColIndex).value = {
-                formula: `SUM(O${startRow}:O${endRow})`,
+                formula: `SUM(P${startRow}:P${endRow})`,
                 result: data.reduce((sum, item) => sum + (item.total || 0), 0),
             }
             totalRow.getCell(totalColIndex).font = { bold: true }

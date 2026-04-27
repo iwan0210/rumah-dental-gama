@@ -10,7 +10,11 @@ router.get('/', (_, res) => {
 })
 
 router.get('/register', (_, res) => {
-    res.render('register', { title: 'Home' })
+    res.render('reg-lama', { title: 'Pendaftaran Pasien Lama' })
+})
+
+router.get('/register/new', (_, res) => {
+    res.render('reg-baru', {title: 'Pendaftaran Pasien Baru'})
 })
 
 router.get('/register/:id', async (req, res) => {

@@ -22,7 +22,7 @@
           <div class="col-lg-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Pencarian Pasien</h3>
+                <h3 class="card-title">Pencarian Registrasi</h3>
                 <div class="card-tools">
                   <div class="input-group">
                     <input type="search" class="form-control" placeholder="Search" id="input-search" />
@@ -36,6 +36,7 @@
                     <thead>
                       <tr>
                         <th>#</th>
+                        <th>No.RM</th>
                         <th>Nama</th>
                         <th>NIK</th>
                         <th>Jenis Kelamin</th>
@@ -54,7 +55,7 @@
                     </thead>
                     <tbody id="table-body">
                       <tr>
-                        <td colspan="15" class="text-center">No Data Available.</td>
+                        <td colspan="16" class="text-center">No Data Available.</td>
                       </tr>
                     </tbody>
                   </table>
@@ -84,7 +85,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
 
       document.getElementById('search-btn').addEventListener('click', async () => {
-        await fetchSearchPatient()
+        await fetchSearchRegister()
       })
 
     })
