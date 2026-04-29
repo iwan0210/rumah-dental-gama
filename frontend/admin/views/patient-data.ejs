@@ -83,11 +83,111 @@
       <!--end::Container-->
     </div>
     <!--end::App Content-->
+    <div class="modal fade" id="modal-merge" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title">Gabung No.RM</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+
+            <!-- Data sumber -->
+            <div class="mb-3">
+              <label>No.RM Sumber</label>
+              <input type="text" id="merge-source-rm" class="form-control" readonly>
+            </div>
+
+            <div class="mb-3">
+              <label>Nama Sumber</label>
+              <input type="text" id="merge-source-nama" class="form-control" disabled>
+            </div>
+
+            <hr>
+
+            <!-- Input tujuan -->
+            <div class="mb-3">
+              <label>No.RM Tujuan</label>
+              <div class="input-group">
+                <input type="text" id="merge-target-rm" class="form-control">
+                <button class="btn btn-primary" id="btn-check-rm">Cek</button>
+              </div>
+            </div>
+
+            <!-- Hasil cek -->
+            <div id="target-info" style="display:none;">
+              <div class="mb-2">
+                <label>Nama</label>
+                <input type="text" id="target-nama" class="form-control" disabled>
+              </div>
+              <div class="mb-2">
+                <label>NIK</label>
+                <input type="text" id="target-nik" class="form-control" disabled>
+              </div>
+              <div class="mb-2">
+                <label>Tanggal Lahir</label>
+                <input type="text" id="target-tgl" class="form-control" disabled>
+              </div>
+              <div class="mb-2">
+                <label>Jenis Kelamin</label>
+                <input type="text" id="target-jk" class="form-control" disabled>
+              </div>
+              <div class="mb-2">
+                <label>Alamat</label>
+                <input type="text" id="target-alamat" class="form-control" disabled>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-success" id="btn-merge">Gabung</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </main>
   <!--end::App Main-->
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+
+      modal = new bootstrap.Modal(document.getElementById('modal-merge'))
+
+      document.getElementById('modal-merge').addEventListener('shown.bs.modal', () => {
+        document.getElementById('merge-target-rm').focus()
+      })
+
+      document.getElementById('merge-target-rm').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          document.getElementById('btn-check-rm').click()
+        }
+      })
+      document.getElementById('btn-check-rm').addEventListener('click', async () => {
+        const targetRM = document.getElementById('merge-target-rm').value
+        await checkTargetPatient(targetRM)
+      })
+      document.getElementById('btn-merge').addEventListener('click', async () => {
+        const sourceRM = document.getElementById('merge-source-rm').value
+        const targetRM = document.getElementById('merge-target-rm').value
+
+        if (!sourceRM || !targetRM) {
+          alert('Data belum lengkap')
+          return
+        }
+
+        if (sourceRM === targetRM) {
+          alert('Tidak bisa gabung ke No.RM yang sama')
+          return
+        }
+
+        if (!confirm(`Gabungkan ${sourceRM} ke ${targetRM}?`)) return
+
+        await doMergePatient(sourceRM, targetRM)
+      })
 
       document.getElementById('search-btn').addEventListener('click', async () => {
         currentPage = 1

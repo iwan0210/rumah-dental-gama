@@ -9,6 +9,7 @@ class PatientHandler {
         this.getSearchPatient = this.getSearchPatient.bind(this)
         this.putUpdatePatient = this.putUpdatePatient.bind(this)
         this.getSearchPatientLimited = this.getSearchPatientLimited.bind(this)
+        this.postMergePatient = this.postMergePatient.bind(this)
     }
 
     async getPatientByIdAndBirth(req, res, next) {
@@ -119,6 +120,24 @@ class PatientHandler {
             const { nama, nik, nohp, alamat, jk, tglLahir } = req.body
 
             await this._service.updatePatient(id, nama, nik, jk, tglLahir, nohp, alamat)
+
+            const response = {
+                error: false,
+                status: 200,
+                message: 'Success'
+            }
+            res.status(200).json(response)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async postMergePatient(req, res, next) {
+        try {
+            this._validator.validateMergePatientPayload(req.body)
+            const { sourceRM, targetRM } = req.body
+
+            await this._service.mergePatient(sourceRM, targetRM)
 
             const response = {
                 error: false,

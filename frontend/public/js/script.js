@@ -1022,7 +1022,10 @@ const fetchSearchPatient = async (page = 1) => {
                 <td>${item.tgl_lahir.split('T')[0]} / ${age} Th</td>
                 <td>${item.alamat}</td>
                 <td>${item.nohp}</td>
-                <td><button class="btn btn-primary" onclick="editPatient('${item.no_rkm_medis}')">Edit</button></td>
+                <td>
+                    <button class="btn btn-primary" onclick="editPatient('${item.no_rkm_medis}')">Edit</button>
+                    <button class="btn btn-success" onclick="mergePatient('${item.no_rkm_medis}', '${item.nama}')">Gabung</button>
+                </td>
             `
             tableBody.appendChild(row)
         })
@@ -1488,8 +1491,81 @@ function selectPasien(p) {
     document.getElementById('telepon').value = p.nohp
     document.getElementById('tanggal-lahir').value = p.tgl_lahir
     document.getElementById('jenis-kelamin').value =
-    p.jk === 'L' ? 'Laki-laki' : 'Perempuan'
+        p.jk === 'L' ? 'Laki-laki' : 'Perempuan'
 
     modal.hide()
 }
 
+function mergePatient(no_rm, nama) {
+
+    document.getElementById('merge-source-rm').value = no_rm
+    document.getElementById('merge-source-nama').value = nama
+
+    document.getElementById('merge-target-rm').value = ''
+    document.getElementById('target-info').style.display = 'none'
+
+    document.getElementById('target-nama').value = ''
+    document.getElementById('target-nik').value = ''
+    document.getElementById('target-tgl').value = ''
+    document.getElementById('target-jk').value = ''
+    document.getElementById('target-alamat').value = ''
+
+    const modalEl = document.getElementById('modal-merge')
+
+    if (!modal) {
+        modal = new bootstrap.Modal(modalEl)
+    }
+
+    modal.show()
+}
+
+const checkTargetPatient = async (noRM) => {
+    if (!noRM) {
+        alert('Masukkan No.RM tujuan')
+        return
+    }
+
+    try {
+        const { data } = await axios.get(`/api/patient/${noRM}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        if (!data.data || !data.data.no_rkm_medis) {
+            alert('Data tidak ditemukan')
+            return
+        }
+
+        document.getElementById('target-nama').value = data.data.nama
+        document.getElementById('target-nik').value = data.data.nik
+        document.getElementById('target-tgl').value = data.data.tgl_lahir
+        document.getElementById('target-jk').value = (data.data.jk === 'L') ? 'Laki-laki' : 'Perempuan'
+        document.getElementById('target-alamat').value = data.data.alamat
+
+        document.getElementById('target-info').style.display = 'block'
+    } catch (error) {
+        console.error(err)
+        alert(err.response?.data?.message || 'Gagal mengambil data')
+    }
+}
+
+const doMergePatient = async (sourceRM, targetRM) => {
+    try {
+        const { data } = await axios.post('/api/patient/merge', {
+            sourceRM: sourceRM,
+            targetRM: targetRM
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        alert('Berhasil gabung No.RM')
+
+        location.reload()
+    } catch (error) {
+        console.error(err)
+        alert(err.response?.data?.message || 'Gagal merge')
+    }
+}

@@ -187,6 +187,27 @@ class PatientService {
         // validasi
         return dd === expectedDay && mm === month && yy === year;
     }
+
+    async mergePatient(sourceRM, targetRM) {
+        await this.checkPatient(sourceRM)
+        await this.checkPatient(targetRM)
+
+        await this._pool.query("UPDATE registrasi SET no_rkm_medis = ? WHERE no_rkm_medis = ?", [targetRM, sourceRM])
+
+        const [result] = await this._pool.query("DELETE FROM pasien WHERE no_rkm_medis = ?", [sourceRM])
+
+        if (result.affectedRows === 0) {
+            throw new NotFoundError(`Pasien tidak ditemukan`)
+        }
+    }
+
+    async checkPatient(noRM) {
+        const [result] = await this._pool.query("SELECT no_rkm_medis FROM pasien WHERE no_rkm_medis = ?", [noRM])
+
+        if (!result[0].no_rkm_medis) {
+            throw new NotFoundError("Pasien tidak ditemukan")
+        }
+    }
 }
 
 module.exports = PatientService

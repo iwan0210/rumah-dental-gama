@@ -61,6 +61,24 @@ const PatientSchema = {
         keyword: Joi.string().allow('').trim().messages({
             'string.base': 'Keyword harus berupa teks.'
         })
+    }),
+    mergePatient: Joi.object({
+        sourceRM: Joi.string()
+            .pattern(/^\d{6}$/)
+            .required()
+            .messages({
+                'string.pattern.base': 'Nomor Rekam Medis harus berupa 6 digit angka.',
+                'string.empty': 'Nomor Rekam Medis tidak boleh kosong.',
+                'any.required': 'Nomor Rekam Medis wajib diisi.'
+            }),
+        targetRM: Joi.string()
+            .pattern(/^\d{6}$/)
+            .required()
+            .messages({
+                'string.pattern.base': 'Nomor Rekam Medis harus berupa 6 digit angka.',
+                'string.empty': 'Nomor Rekam Medis tidak boleh kosong.',
+                'any.required': 'Nomor Rekam Medis wajib diisi.'
+            })
     })
 }
 
@@ -82,6 +100,12 @@ const PatientValidator = {
         if (validationResult.error) {
             throw new InvariantError(validationResult.error.message)
         }
+    },
+    validateMergePatientPayload: payload => {
+       const validationResult = PatientSchema.mergePatient.validate(payload)
+        if (validationResult.error) {
+            throw new InvariantError(validationResult.error.message)
+        } 
     }
 }
 
