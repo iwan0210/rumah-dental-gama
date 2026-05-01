@@ -204,7 +204,8 @@ class RegisterHandler {
                 {
                     headers: {
                         Authorization: process.env.WHATSAPP_TOKEN
-                    }
+                    },
+                    timeout: 15000 //
                 }
             )
         } catch (error) {
