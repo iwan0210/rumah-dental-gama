@@ -94,7 +94,7 @@ class UsersHandler {
                 if (err) {
                     throw new Error('Failed to logout')
                 }
-                res.clearCookie('connect.sid')
+                res.clearCookie('sid')
                 res.status(200).json({
                     error: false,
                     status: 200,

@@ -67,6 +67,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 })
 
+axios.interceptors.request.use(function (config) {
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
+
+axios.interceptors.response.use(
+    function (response) {
+        return response
+    },
+    function (error) {
+        if (error.response?.status === 401) {
+            localStorage.clear();
+            window.location.replace("/admin/login")
+        }
+
+        return Promise.reject(error)
+    }
+)
+
 const fetchData = async (page = 1) => {
     try {
         const response = await axios.get('/api/register', {
@@ -75,9 +98,6 @@ const fetchData = async (page = 1) => {
                 limit: limit,
                 startDate: startDate,
                 endDate: endDate
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
             }
         })
 
@@ -110,6 +130,7 @@ const fetchData = async (page = 1) => {
                 <td>${item.nohp}</td>
                 <td>${item.no_reg}</td>
                 <td>${item.tanggal.split('T')[0]}</td>
+                <td>${item.start_time.slice(0, 5)}-${item.end_time.slice(0, 5)}</td>
                 <td>${item.keluhan}</td>
                 <td><button class="btn btn-primary" onclick="editRegister('${item.id}')">Edit</button>
                 <button class="btn btn-danger" onclick="deleteRegister('${item.id}')">Delete</button>
@@ -281,20 +302,16 @@ const logout = async () => {
     if (confirmLogout) {
 
         try {
-            await axios.post('/api/users/auth/logout', {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            await axios.post('/api/users/auth/logout')
         } catch (error) {
-            console.error('Error during logout:', error);
-            alert('Gagal keluar. Silakan coba lagi.');
+            console.error('Error during logout:', error)
+            alert('Gagal keluar. Silakan coba lagi.')
             return;
         }
 
         localStorage.clear();
 
-        window.location.href = "/admin/login";
+        window.location.href = "/admin/login"
     }
 }
 
@@ -319,11 +336,7 @@ const insertPatientData = async () => {
     }
 
     try {
-        await axios.post('/api/patient', data, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
+        await axios.post('/api/patient', data)
 
         clearForm();
 
@@ -350,6 +363,7 @@ const insertData = async () => {
     const data = {
         no_rkm_medis: document.getElementById('no_rkm_medis').value,
         tanggalDaftar: document.getElementById('tanggal-periksa').value,
+        queueSession: Number(document.querySelector('input[name="queue_session_id"]:checked')?.value),
         keluhan: document.getElementById('keluhan').value.trim(),
         diagnosa: document.getElementById('diagnosa').value.trim(),
         tindakan: document.getElementById('tindakan').value.trim(),
@@ -358,11 +372,7 @@ const insertData = async () => {
     };
 
     try {
-        await axios.post('/api/register/complete', data, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        await axios.post('/api/register/complete', data);
 
         clearForm();
 
@@ -404,11 +414,7 @@ const updateData = async (id) => {
     };
 
     try {
-        await axios.put('/api/register/' + id, data, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        await axios.put('/api/register/' + id, data);
 
         clearForm();
 
@@ -430,11 +436,7 @@ const updatePatientData = async (id) => {
     }
 
     try {
-        await axios.put('/api/patient/' + id, data, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        await axios.put('/api/patient/' + id, data);
 
         clearForm();
 
@@ -450,11 +452,7 @@ const deleteRegister = async (id) => {
     try {
         const confirmDelete = confirm("Apakah Anda yakin ingin menghapus data ini?");
         if (confirmDelete) {
-            await axios.delete('/api/register/' + id, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            await axios.delete('/api/register/' + id)
             fetchData(currentPage)
         }
     } catch (error) {
@@ -684,11 +682,7 @@ const searchPatient = async () => {
     }
 
     try {
-        const response = await axios.get('/api/register/patient/' + nik, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
+        const response = await axios.get('/api/register/patient/' + nik)
 
         const { data } = response.data
 
@@ -705,11 +699,7 @@ const searchPatient = async () => {
 const fetchFinance = async () => {
     const selectedYear = document.getElementById('select-year').value.trim()
     try {
-        const response = await axios.get('/api/register/finance/' + selectedYear, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
+        const response = await axios.get('/api/register/finance/' + selectedYear)
 
         const { data } = response.data
 
@@ -777,9 +767,6 @@ const fetchPatientMonthlyReport = async () => {
             params: {
                 year: selectedYear,
                 month: selectedMonth
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
             }
         })
 
@@ -846,9 +833,6 @@ const exportExcelMonthly = async () => {
                 year: selectedYear,
                 month: selectedMonth
             },
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
             responseType: 'blob'
         })
 
@@ -884,9 +868,6 @@ const exportExcelDaily = async () => {
             params: {
                 startDate: startDate,
                 endDate: endDate
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
             },
             responseType: 'blob'
         })
@@ -929,9 +910,6 @@ const fetchSearchRegister = async () => {
         const response = await axios.get('/api/register/search', {
             params: {
                 query: query
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
             }
         })
 
@@ -989,9 +967,6 @@ const fetchSearchPatient = async (page = 1) => {
                 keyword: query,
                 page: page,
                 limit: limit
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
             }
         })
 
@@ -1050,9 +1025,6 @@ const fetchPatientDailyReport = async () => {
             params: {
                 startDate: startDate,
                 endDate: endDate
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
             }
         })
 
@@ -1097,9 +1069,6 @@ const fetchUsers = async () => {
         const response = await axios.get('/api/users', {
             params: {
                 search: searchQuery
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
             }
         })
 
@@ -1130,11 +1099,7 @@ const deleteUser = async (id) => {
     try {
         const confirmDelete = confirm("Apakah Anda yakin ingin menghapus user ini?");
         if (confirmDelete) {
-            await axios.delete('/api/users/' + id, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            await axios.delete('/api/users/' + id)
             fetchUsers()
         }
     } catch (error) {
@@ -1160,10 +1125,6 @@ const addUser = async () => {
             name: name,
             password: password,
             role: role
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
         });
 
         clearForm();
@@ -1208,11 +1169,6 @@ const changeUser = async id => {
                 name: name,
                 role: role,
                 password: password || undefined // Password is optional
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
             }
         )
 
@@ -1238,10 +1194,6 @@ const changePassword = async () => {
         await axios.put('/api/users/auth/password', {
             oldPassword: oldPassword,
             newPassword: newPassword
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
         })
 
         alert('Password changed successfully.')
@@ -1255,11 +1207,7 @@ const changePassword = async () => {
 
 const sendMessage = async (id) => {
     try {
-        await axios.post('/api/register/notif/' + id, {}, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
+        await axios.post('/api/register/notif/' + id)
         alert('Pesan WhatsApp berhasil dikirim.')
     } catch (error) {
         console.error('Error sending WhatsApp message:', error)
@@ -1275,9 +1223,6 @@ const fetchHolidays = async (page = 1) => {
                 page: page,
                 limit: limit,
                 search: searchQuery
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
             }
         })
 
@@ -1315,11 +1260,7 @@ const deleteHoliday = async (date) => {
     try {
         const confirmDelete = confirm("Apakah Anda yakin ingin menghapus tanggal ini?");
         if (confirmDelete) {
-            await axios.delete('/api/holiday/' + date, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            await axios.delete('/api/holiday/' + date)
             fetchHolidays()
         }
     } catch (error) {
@@ -1346,18 +1287,10 @@ const submitHoliday = async () => {
 
     try {
         if (mode === 'add') {
-            await axios.post('/api/holiday/', data, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            })
+            await axios.post('/api/holiday/', data)
         } else {
             await axios.put(`/api/holiday/${selectedTanggal}`, {
                 keterangan: data.keterangan
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
             })
         }
     } catch (error) {
@@ -1435,9 +1368,6 @@ async function fetchPasien(keyword) {
 
         const res = await axios.get('/api/patient/search', {
             params: { keyword },
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
             signal: currentController.signal
         })
 
@@ -1526,11 +1456,7 @@ const checkTargetPatient = async (noRM) => {
     }
 
     try {
-        const { data } = await axios.get(`/api/patient/${noRM}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
+        const { data } = await axios.get(`/api/patient/${noRM}`)
 
         if (!data.data || !data.data.no_rkm_medis) {
             alert('Data tidak ditemukan')
@@ -1555,10 +1481,6 @@ const doMergePatient = async (sourceRM, targetRM) => {
         const { data } = await axios.post('/api/patient/merge', {
             sourceRM: sourceRM,
             targetRM: targetRM
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
         })
 
         alert('Berhasil gabung No.RM')
@@ -1567,5 +1489,225 @@ const doMergePatient = async (sourceRM, targetRM) => {
     } catch (error) {
         console.error(err)
         alert(err.response?.data?.message || 'Gagal merge')
+    }
+}
+
+const loadQueueSessions = async () => {
+    try {
+        const response = await axios.get('/api/queue-session/active');
+        const sessions = response.data.data;
+
+        const container = document.getElementById('queueSessionGroup');
+        container.innerHTML = '';
+
+        sessions.forEach((session, index) => {
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.className = 'btn-check';
+            input.name = 'queue_session_id';
+            input.id = `queue-session-${session.id}`;
+            input.value = session.id;
+            input.autocomplete = 'off';
+            input.required = true;
+
+            if (sessions.length === 1) {
+                input.checked = true;
+            }
+
+            const label = document.createElement('label');
+            label.className = 'btn btn-outline-secondary';
+            label.htmlFor = input.id;
+            label.textContent = `${session.start_time.slice(0, 5)} - ${session.end_time.slice(0, 5)}`;
+
+            container.appendChild(input);
+            container.appendChild(label);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const fetchQueueSessions = async () => {
+    try {
+        const response = await axios.get('/api/queue-session')
+
+        const { data } = response.data
+
+        const tableBody = document.getElementById('table-body')
+        tableBody.innerHTML = '' // Clear previous data
+        data.forEach((item) => {
+            const row = document.createElement('tr')
+
+            row.innerHTML = `
+                <td>${item.id}</td>
+                <td>${item.name}</td>
+                <td>${item.start_time}</td>
+                <td>${item.end_time}</td>
+                <td>
+                    ${item.status == 1 
+                        ? '<span class="badge bg-success">Aktif</span>' 
+                        : '<span class="badge bg-secondary">Nonaktif</span>'
+                    }
+                </td>
+                <td>
+                    <button 
+                        class="btn btn-primary" 
+                        onclick="editQueueSession('${item.id}')">
+                        Edit
+                    </button>
+
+                    ${
+                        item.status == 1
+                        ?
+                        `<button 
+                            class="btn btn-danger" 
+                            onclick="updateStatusQueueSession('${item.id}', 0)">
+                            Deactivate
+                        </button>`
+                        :
+                        `<button 
+                            class="btn btn-success" 
+                            onclick="updateStatusQueueSession('${item.id}', 1)">
+                            Activate
+                        </button>`
+                    }
+                </td>
+            `
+
+            tableBody.appendChild(row)
+        })
+    } catch (error) {
+        console.error('Error fetching queue session:', error)
+        alert('Error fetching queue session. Please try again later.')
+    }
+}
+
+const addQueueSession = async () => {
+    const name = document.getElementById('name').value.trim()
+    const startTime = document.getElementById('start_time').value.trim()
+    const endTime = document.getElementById('end_time').value.trim()
+
+    if (!name || !startTime || !endTime) {
+        alert('nama, jam mulai, dan jam selesai are required.')
+        return
+    }
+
+    try {
+        await axios.post('/api/queue-session', {
+            name: name,
+            startTime: startTime,
+            endTime: endTime
+        });
+
+        clearForm();
+        location.href = '/admin/queue-session';
+    } catch (error) {
+        console.error('Error submitting form:', error)
+
+        if (error.response) {
+            const status = error.response.status
+            const message = error.response.data?.message || 'Terjadi kesalahan dari server'
+
+            alert(`Error ${status}: ${message}`)
+
+        } else if (error.request) {
+            alert('Server tidak merespon. Periksa koneksi atau server.')
+
+        } else {
+            alert(`Error: ${error.message}`)
+        }
+    }
+}
+
+const editQueueSession = id => {
+    window.location = '/admin/queue-session/edit/' + id
+}
+
+const changeQueueSession = async id => {
+    const name = document.getElementById('name').value.trim()
+    const startTime = document.getElementById('start_time').value.trim()
+    const endTime = document.getElementById('end_time').value.trim()
+
+    if (!name || !startTime || !endTime) {
+        alert('nama, jam mulai, dan jam selesai are required.')
+        return
+    }
+
+    try {
+        await axios.put('/api/queue-session/'+id, {
+            name: name,
+            startTime: startTime,
+            endTime: endTime
+        });
+
+        clearForm();
+        location.href = '/admin/queue-session';
+    } catch (error) {
+        console.error('Error changing Queue Session:', error);
+        alert('Gagal mengubah Jadwal. Silakan coba lagi.');
+    }
+}
+
+const updateStatusQueueSession = async (id, status) => {
+
+    if (!confirm('Apakah Anda yakin ingin mengubah status Jadwal ini?')) {
+        return;
+    }
+
+    try {
+        await axios.patch('/api/queue-session/'+id, {
+            status: status
+        });
+
+        location.reload()
+    } catch (error) {
+        console.error('Error changing password:', error);
+        alert('Gagal mengubah password. Silakan coba lagi.');
+    }
+}
+
+const exportLogbook = async () => {
+    try {
+        const response = await axios.get('/api/register/export/logbook', {
+            params: {
+                startDate: startDate,
+                endDate: endDate
+            },
+            responseType: 'blob'
+        })
+
+        const disposition = response.headers['content-disposition']
+
+        let fileName = `Logbook_${startDate}_to_${endDate}.xlsx`
+
+        if (disposition && disposition.includes('filename=')) {
+            const fileNameMatch = disposition.match(/filename="?([^"]+)"?/);
+            if (fileNameMatch && fileNameMatch.length > 1) {
+                fileName = fileNameMatch[1].trim();
+            }
+        }
+
+        const url = window.URL.createObjectURL(response.data)
+
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+
+        a.remove()
+        window.URL.revokeObjectURL(url)
+    } catch (error) {
+        try {
+            if (error.response?.data instanceof Blob) {
+                const text = await error.response.data.text();
+                const { message } = JSON.parse(text);
+                alert(message);
+            } else {
+                alert(error.response?.data?.message || error.message);
+            }
+        } catch {
+            alert("Terjadi kesalahan.");
+        }
     }
 }

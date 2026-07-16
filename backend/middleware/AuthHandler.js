@@ -1,15 +1,16 @@
 const jwt = require('jsonwebtoken')
 const AuthenticationError = require('../exceptions/AuthenticationError')
+const AuthorizationError = require('../exceptions/AuthorizationError')
 
-const verifyToken = (req, _, next) => {
+const verifyToken = (requiredRoles = null) => (req, res, next) => {
     try {
-        const { authorization } = req.headers
+        const auth = req.headers.authorization
 
-        if (!authorization || !authorization.startsWith('Bearer ')) {
-            throw new AuthenticationError('Authorization header is missing')
+        if (!auth?.startsWith("Bearer ")) {
+            throw new AuthenticationError("Authorization header is missing");
         }
 
-        const token = authorization.split(' ')[1]
+        const token = auth.substring(7).trim()
 
         if (!token) {
             throw new AuthenticationError('Token is missing')
@@ -17,42 +18,8 @@ const verifyToken = (req, _, next) => {
 
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
-        if (!decoded) {
-            throw new AuthenticationError('Invalid token')
-        }
-
-        req.id = decoded.id
-        req.user = decoded.user
-        req.name = decoded.name
-
-        next()
-    } catch (error) {
-        next(error)
-    }
-}
-
-const verifyAdminToken = (req, _, next) => {
-    try {
-        const { authorization } = req.headers
-
-        if (!authorization || !authorization.startsWith('Bearer ')) {
-            throw new AuthenticationError('Authorization header is missing')
-        }
-
-        const token = authorization.split(' ')[1]
-
-        if (!token) {
-            throw new AuthenticationError('Token is missing')
-        }
-
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-
-        if (!decoded) {
-            throw new AuthenticationError('Invalid token')
-        }
-
-        if (decoded.role !== 'admin') {
-            throw new AuthenticationError('Access denied, admin role required')
+        if (requiredRoles && !requiredRoles.includes(decoded.role)) {
+            throw new AuthorizationError("Access denied");
         }
 
         req.id = decoded.id
@@ -62,43 +29,17 @@ const verifyAdminToken = (req, _, next) => {
 
         next()
     } catch (error) {
+
+        if (
+            error instanceof jwt.JsonWebTokenError ||
+            error instanceof jwt.TokenExpiredError ||
+            error instanceof jwt.NotBeforeError
+        ) {
+            error = new AuthenticationError("Invalid or expired token");
+        }
+
         next(error)
     }
 }
 
-const verifyAdminOrPendaftaranToken = (req, _, next) => {
-    try {
-        const { authorization } = req.headers
-
-        if (!authorization || !authorization.startsWith('Bearer ')) {
-            throw new AuthenticationError('Authorization header is missing')
-        }
-
-        const token = authorization.split(' ')[1]
-
-        if (!token) {
-            throw new AuthenticationError('Token is missing')
-        }
-
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-
-        if (!decoded) {
-            throw new AuthenticationError('Invalid token')
-        }
-
-        if (!['admin', 'pendaftaran'].includes(decoded.role)) {
-            throw new AuthenticationError('Access denied, admin or pendaftaran role required')
-        }
-
-        req.id = decoded.id
-        req.user = decoded.user
-        req.name = decoded.name
-        req.role = decoded.role
-
-        next()
-    } catch (error) {
-        next(error)
-    }
-}
-
-module.exports = { verifyToken, verifyAdminToken, verifyAdminOrPendaftaranToken }
+module.exports = { verifyToken }

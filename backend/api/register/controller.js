@@ -1,10 +1,11 @@
 class RegisterHandler {
-    constructor(service, validator, axios, ExcelJS, patient) {
+    constructor(service, validator, axios, ExcelJS, patient, queueSession) {
         this._service = service
         this._validator = validator
         this._axios = axios
         this._ExcelJS = ExcelJS
         this._patient = patient
+        this._queueSession = queueSession
 
         this.postRegisterHandler = this.postRegisterHandler.bind(this)
         this.postRegisterNewHandler = this.postRegisterNewHandler.bind(this)
@@ -20,13 +21,17 @@ class RegisterHandler {
         this.getPatientByNameOrNikHandler = this.getPatientByNameOrNikHandler.bind(this)
         this.getAllRegisterByRangeDateHandler = this.getAllRegisterByRangeDateHandler.bind(this)
         this.postSendWhatsappMessage = this.postSendWhatsappMessage.bind(this)
+        this.getExportExcelLogbook = this.getExportExcelLogbook.bind(this)
     }
 
     async postRegisterHandler(req, res, next) {
         try {
             this._validator.validateAddRegisterPayload(req.body)
-            const { no_rkm_medis, tanggalDaftar, keluhan } = req.body
-            const [id, queueNumber] = await this._service.register(no_rkm_medis, tanggalDaftar, keluhan)
+            const { no_rkm_medis, tanggalDaftar, queueSession, keluhan } = req.body
+
+            await this._queueSession.getActiveQueueSessionById(queueSession)
+
+            const [id, queueNumber] = await this._service.register(no_rkm_medis, tanggalDaftar, queueSession, keluhan)
 
             this._sendWhatsappMessage(id).catch(err => console.log("WA error ignored:", err.message))
 
@@ -47,9 +52,12 @@ class RegisterHandler {
     async postRegisterNewHandler(req, res, next) {
         try {
             this._validator.validateAddRegisterNewPayload(req.body)
-            const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, keluhan } = req.body
+            const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, queueSession, keluhan } = req.body
+
+            await this._queueSession.getActiveQueueSessionById(queueSession)
+
             const newRM = await this._patient.addPatient(nama, nik, jk, tglLahir, nohp, alamat)
-            const [id, queueNumber] = await this._service.register(newRM, tanggalDaftar, keluhan)
+            const [id, queueNumber] = await this._service.register(newRM, tanggalDaftar, queueSession, keluhan)
 
             this._sendWhatsappMessage(id).catch(err => console.log("WA error ignored:", err.message))
 
@@ -145,8 +153,11 @@ class RegisterHandler {
     async postCompleteRegisterHandler(req, res, next) {
         try {
             this._validator.validateAddRegisterCompletePayload(req.body)
-            const { no_rkm_medis, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total } = req.body
-            const id = await this._service.insertCompleteRegister(no_rkm_medis, tanggalDaftar, keluhan, diagnosa, tindakan, obat, total)
+            const { no_rkm_medis, tanggalDaftar, queueSession, keluhan, diagnosa, tindakan, obat, total } = req.body
+
+            await this._queueSession.getActiveQueueSessionById(queueSession)
+
+            const id = await this._service.insertCompleteRegister(no_rkm_medis, tanggalDaftar, queueSession, keluhan, diagnosa, tindakan, obat, total)
             const response = {
                 error: false,
                 status: 201,
@@ -495,6 +506,115 @@ class RegisterHandler {
                 message: 'Success'
             }
             res.status(200).json(response)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async getExportExcelLogbook(req, res, next) {
+        try {
+            let { startDate, endDate } = req.query
+
+            const now = new Date().toLocaleDateString('sv-SE')
+            startDate = startDate || now
+            endDate = endDate || now
+
+            const data = await this._service.getLogBookByRangeDate(startDate, endDate)
+
+            const workbook = new this._ExcelJS.Workbook()
+            const worksheet = workbook.addWorksheet('Logbook Pasien')
+
+
+            worksheet.columns = [
+                { header: 'No', key: 'no', width: 5 },
+                { header: 'No. RM', key: 'no_rkm_medis', width: 15 },
+                { header: 'Nama', key: 'nama', width: 25 },
+                { header: 'Tanggal Lahir', key: 'tgl_lahir', width: 18 },
+                { header: 'JK', key: 'jk', width: 10 },
+                { header: 'Alamat', key: 'alamat', width: 35 },
+                { header: 'Tanggal', key: 'tanggal', width: 18 },
+                { header: 'Diagnosa', key: 'diagnosa', width: 30 },
+            ]
+
+
+            // Header style
+            const header = worksheet.getRow(1)
+
+            header.font = {
+                bold: true,
+                color: { argb: 'FFFFFFFF' }
+            }
+
+            header.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FF1F497D' }
+            }
+
+            header.alignment = {
+                vertical: 'middle',
+                horizontal: 'center'
+            }
+
+            header.height = 20
+
+
+            // Data
+            data.forEach((item, index) => {
+
+                worksheet.addRow({
+                    no: index + 1,
+                    no_rkm_medis: item.no_rkm_medis,
+                    nama: item.nama,
+                    tgl_lahir: item.tgl_lahir,
+                    jk: item.jk,
+                    alamat: item.alamat,
+                    tanggal: item.tanggal,
+                    diagnosa: item.diagnosa
+                })
+
+            })
+
+
+            // Border + alignment
+            worksheet.eachRow((row) => {
+
+                row.alignment = {
+                    vertical: 'middle',
+                    horizontal: 'left',
+                    wrapText: true
+                }
+
+
+                row.eachCell({ includeEmpty: true }, (cell) => {
+
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                        left: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                        bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                        right: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                    }
+
+                })
+
+            })
+
+
+            res.setHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+
+            res.setHeader(
+                'Content-Disposition',
+                'attachment; filename="logbook_pasien.xlsx"'
+            )
+
+
+            await workbook.xlsx.write(res)
+
+            res.end()
+
         } catch (error) {
             next(error)
         }

@@ -9,6 +9,8 @@ const UsersService = require('../../backend/services/UsersService')
 const usersService = new UsersService()
 const PatientService = require('../../backend/services/PatientService')
 const patientService = new PatientService()
+const QueueSessionService = require('../../backend/services/QueueSessionService')
+const queueSessionService = new QueueSessionService()
 
 const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
 
@@ -154,7 +156,48 @@ router.get('/holiday', (req, res) => {
         return res.redirect('/admin/login')
     }
 
+    if (req.session.user.role !== 'admin') {
+        return res.status(404).render('404', { title: 'Forbidden' })
+    }
+
     res.render('holiday', { title: 'Hari Libur', user: req.session.user})
+})
+
+router.get('/queue-session', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/admin/login')
+    }
+
+    if (req.session.user.role !== 'admin') {
+        return res.status(404).render('404', { title: 'Forbidden' })
+    }
+
+    res.render('session-data', { title: 'Jadwal', user: req.session.user})
+})
+
+router.get('/queue-session/add', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/admin/login')
+    }
+
+    if (req.session.user.role !== 'admin') {
+        return res.status(404).render('404', { title: 'Forbidden' })
+    }
+
+    res.render('session-add', { title: 'Tambah Jadwal', user: req.session.user})
+})
+
+router.get('/queue-session/edit/:id', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/admin/login')
+    }
+
+    if (req.session.user.role !== 'admin') {
+        return res.status(404).render('404', { title: 'Forbidden' })
+    }
+
+    const data = await queueSessionService.getQueueSessionsById(req.params.id)
+    res.render('session-edit', { title: 'Ubah Jadwal', ...data, user: req.session.user})
 })
 
 router.get('/users', (req, res) => {

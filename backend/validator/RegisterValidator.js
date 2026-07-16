@@ -16,6 +16,16 @@ const RegisterSchema = {
             'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal wajib diisi.'
         }),
+        queueSession: Joi.number()
+        .integer()
+        .positive()
+        .required()
+        .messages({
+            'number.base': 'Sesi antrian harus berupa angka.',
+            'number.integer': 'Sesi antrian harus berupa angka bulat.',
+            'number.positive': 'Sesi antrian tidak valid.',
+            'any.required': 'Sesi antrian wajib dipilih.'
+        }),
         keluhan: Joi.string().required().messages({
             'string.base': 'Keluhan harus berupa teks.',
             'any.required': 'Keluhan wajib diisi.'
@@ -54,6 +64,16 @@ const RegisterSchema = {
             'date.base': 'Tanggal harus berupa tanggal yang valid.',
             'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal wajib diisi.'
+        }),
+        queueSession: Joi.number()
+        .integer()
+        .positive()
+        .required()
+        .messages({
+            'number.base': 'Sesi antrian harus berupa angka.',
+            'number.integer': 'Sesi antrian harus berupa angka bulat.',
+            'number.positive': 'Sesi antrian tidak valid.',
+            'any.required': 'Sesi antrian wajib dipilih.'
         }),
         keluhan: Joi.string().required().messages({
             'string.base': 'Keluhan harus berupa teks.',
@@ -122,6 +142,16 @@ const RegisterSchema = {
             'date.base': 'Tanggal lahir harus berupa tanggal yang valid.',
             'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal lahir wajib diisi.'
+        }),
+        queueSession: Joi.number()
+        .integer()
+        .positive()
+        .required()
+        .messages({
+            'number.base': 'Sesi antrian harus berupa angka.',
+            'number.integer': 'Sesi antrian harus berupa angka bulat.',
+            'number.positive': 'Sesi antrian tidak valid.',
+            'any.required': 'Sesi antrian wajib dipilih.'
         }),
         keluhan: Joi.string().required().messages({
             'string.base': 'Keluhan harus berupa teks.',

@@ -72,6 +72,11 @@
                                                     onclick="today()">Hari Ini</button>
                                             </div>
                                         </div>
+                                        <label class="form-label d-flex justify-content-center">Jadwal</label>
+                                        <div class="col-sm-12 mb-3 d-flex justify-content-center">
+                                            <div class="btn-group"  id="queueSessionGroup" role="group" aria-label="Queue Sessions">
+                                            </div>
+                                        </div>
                                         <div class="col-sm-6 mb-3">
                                             <label for="keluhan" class="form-label">Keluhan</label>
                                             <textarea class="form-control" id="keluhan" rows="3" placeholder="Keluhan"
@@ -200,6 +205,8 @@
                     currentController.abort()
                 }
             })
+
+            loadQueueSessions()
         })
 
     </script>

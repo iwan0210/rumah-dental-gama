@@ -10,10 +10,10 @@ const csrfProtection = csrf()
 const holidayService = new HolidayService()
 const holidayHandler = new HolidayHandler(holidayService, HolidayValidator)
 
-router.get('/', verifyToken, holidayHandler.getAllHolidays)
+router.get('/', verifyToken(), holidayHandler.getAllHolidays)
 router.get('/:date', holidayHandler.getHolidayByDate)
-router.post('/', verifyToken, csrfProtection, holidayHandler.postHoliday)
-router.put('/:date', verifyToken, csrfProtection, holidayHandler.putHoliday)
-router.delete('/:date', verifyToken, csrfProtection, holidayHandler.deleteHoliday)
+router.post('/', verifyToken(), csrfProtection, holidayHandler.postHoliday)
+router.put('/:date', verifyToken(), csrfProtection, holidayHandler.putHoliday)
+router.delete('/:date', verifyToken(), csrfProtection, holidayHandler.deleteHoliday)
 
 module.exports = router

@@ -22,6 +22,7 @@
       <li class="list-group-item"><strong>Tanggal Lahir:</strong> <%= moment(tgl_lahir).format('DD-MM-YYYY') %></li>
       <li class="list-group-item"><strong>Nomor Antrian:</strong> <%= no_reg %></li>
       <li class="list-group-item"><strong>Tanggal Periksa:</strong> <%= moment(tanggal).format('DD-MM-YYYY') %></li>
+      <li class="list-group-item"><strong>Jadwal:</strong> <%= queue_name %> (<%= start_time.slice(0, 5) %> - <%= end_time.slice(0, 5) %>)</li>
       <li class="list-group-item"><strong>Keluhan:</strong> <%= keluhan %></li>
       <li class="list-group-item"><strong>ID Pendaftaran:</strong> <code><%= id %></code></li>
     </ul>

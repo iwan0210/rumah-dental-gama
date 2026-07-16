@@ -170,6 +170,11 @@
                             <label class="form-label small text-muted">Tanggal Periksa</label>
                             <input type="date" id="tgl_periksa" class="form-control mb-2">
                             <small id="info_libur" class="d-block mt-1"></small>
+                            <label class="form-label small text-muted d-flex justify-content-center">Jadwal</label>
+                            <div class="col-sm-12 mb-3 d-flex justify-content-center">
+                                <div class="btn-group"  id="queueSessionGroup" role="group" aria-label="Queue Sessions">
+                                </div>
+                            </div>
                             <label class="form-label small text-muted">Keluhan</label>
                             <textarea id="keluhan" class="form-control mb-2" placeholder="Keluhan"></textarea>
 
@@ -353,6 +358,7 @@
 
             const no_rkm_medis = document.getElementById('no_rkm_medis').value;
             const tgl_periksa = document.getElementById('tgl_periksa').value;
+            const selectedQueueSession = document.querySelector('input[name="queue_session_id"]:checked')
             const keluhan = document.getElementById('keluhan').value;
 
             if (!validateTanggal()) {
@@ -362,10 +368,20 @@
                 return;
             }
 
+            if (!selectedQueueSession) {
+                alert("Silakan pilih jadwal.");
+                btn.disabled = false;
+                btn.innerText = "Daftar Sekarang";
+                return;
+            }
+
+            const queueSession = Number(selectedQueueSession.value);
+
             try {
                 const res = await axios.post('/api/register', {
                     no_rkm_medis,
                     tanggalDaftar: tgl_periksa,
+                    queueSession,
                     keluhan
                 });
 
@@ -413,6 +429,43 @@
             document.getElementById('tgl_periksa').value = "";
             document.getElementById('keluhan').value = "";
         }
+
+        const loadQueueSessions = async () => {
+            try {
+                const response = await axios.get('/api/queue-session/active');
+                const sessions = response.data.data;
+
+                const container = document.getElementById('queueSessionGroup');
+                container.innerHTML = '';
+
+                sessions.forEach((session, index) => {
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.className = 'btn-check';
+                    input.name = 'queue_session_id';
+                    input.id = `queue-session-${session.id}`;
+                    input.value = session.id;
+                    input.autocomplete = 'off';
+                    input.required = true;
+
+                    if (sessions.length === 1) {
+                        input.checked = true;
+                    }
+
+                    const label = document.createElement('label');
+                    label.className = 'btn btn-outline-success';
+                    label.htmlFor = input.id;
+                    label.textContent = `${session.start_time.slice(0, 5)} - ${session.end_time.slice(0, 5)}`;
+
+                    container.appendChild(input);
+                    container.appendChild(label);
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        loadQueueSessions()
     </script>
 
 </body>
