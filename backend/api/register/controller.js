@@ -192,10 +192,12 @@ class RegisterHandler {
         const result = await this._service.getRegisterById(id)
         const age = this.getAge(result.tgl_lahir)
         const jenisKelamin = result.jk === 'L' ? 'Laki-laki' : 'Perempuan'
+        const jadwal = `${result.queue_name} (${result.start_time.slice(0, 5)} - ${result.end_time.slice(0, 5)})`
         const message = `*🦷 Rumah Dental Gama - Pendaftaran Berhasil ✅*\n\n` +
             `Halo *${result.nama}*,\n` +
             `Terima kasih telah melakukan pendaftaran di *Rumah Dental Gama*.\n\n` +
             `📅 *Tanggal Daftar:* ${result.tanggal}\n\n` +
+            `🕒 *Jadwal:* ${jadwal}\n\n` +
             `🔢 *Nomor Antrian:* ${result.no_reg}\n\n` +
             `📌 *Data Anda:*\n` +
             `• No. RM: ${result.no_rkm_medis}\n` +
