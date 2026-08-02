@@ -99,11 +99,11 @@
                     <span class="input-group-text">s/d</span>
                     <input class="form-control" type="date" id="end-date" value="<%= defaultDate %>">
                     <button class="btn btn-warning" id="filter-btn" type="button">Filter</button>
-                    <% if (user && user.role === 'admin') { %>
-                        <button class="btn btn-success" id="logbook-btn" type="button">
-                            Logbook
-                        </button>
-                    <% } %>
+                    <% if (user && user.role==='admin' ) { %>
+                      <button class="btn btn-success" id="logbook-btn" type="button">
+                        Logbook
+                      </button>
+                      <% } %>
                   </div>
                 </div>
               </div>
@@ -178,11 +178,15 @@
         await fetchData(currentPage)
       })
 
-      document.getElementById('logbook-btn').addEventListener('click', async () => {
-        startDate = document.getElementById('start-date').value
-        endDate = document.getElementById('end-date').value
-        await exportLogbook(currentPage)
-      })
+      const logbookBtn = document.getElementById('logbook-btn');
+
+      if (logbookBtn) {
+        logbookBtn.addEventListener('click', async () => {
+          startDate = document.getElementById('start-date').value;
+          endDate = document.getElementById('end-date').value;
+          await exportLogbook(currentPage);
+        });
+      }
 
       await fetchData(currentPage)
     })
