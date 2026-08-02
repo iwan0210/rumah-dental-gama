@@ -90,17 +90,19 @@ class UsersHandler {
 
     async postUserLogoutHandler(req, res, next) {
         try {
-            req.session.destroy(err => {
-                if (err) {
-                    console.err(err)
-                    throw new Error('Failed to logout')
-                }
-                res.clearCookie('sid')
-                res.status(200).json({
-                    error: false,
-                    status: 200,
-                    message: 'Logout successful'
+            await new Promise((resolve, reject) => {
+                req.session.destroy((err) => {
+                    if (err) return reject(err)
+                    resolve()
                 })
+            })
+
+            res.clearCookie('sid')
+
+            res.status(200).json({
+                error: false,
+                status: 200,
+                message: 'Logout successful'
             })
         } catch (error) {
             next(error)
