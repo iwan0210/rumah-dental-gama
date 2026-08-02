@@ -92,6 +92,7 @@ class UsersHandler {
         try {
             req.session.destroy(err => {
                 if (err) {
+                    console.err(err)
                     throw new Error('Failed to logout')
                 }
                 res.clearCookie('sid')
