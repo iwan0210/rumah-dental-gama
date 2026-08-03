@@ -16,7 +16,7 @@ const RegisterSchema = {
             'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal wajib diisi.'
         }),
-        queueSession: Joi.number()
+        schedule: Joi.number()
         .integer()
         .positive()
         .required()
@@ -65,7 +65,7 @@ const RegisterSchema = {
             'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal wajib diisi.'
         }),
-        queueSession: Joi.number()
+        schedule: Joi.number()
         .integer()
         .positive()
         .required()
@@ -143,7 +143,7 @@ const RegisterSchema = {
             'date.format': 'Format tanggal harus ISO 8601 (YYYY-MM-DD).',
             'any.required': 'Tanggal lahir wajib diisi.'
         }),
-        queueSession: Joi.number()
+        schedule: Joi.number()
         .integer()
         .positive()
         .required()

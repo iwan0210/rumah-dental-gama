@@ -28,17 +28,25 @@
                                 <form id="add-data-form">
                                     <div class="row">
                                         <div class="col-sm-6 mb-5">
-                                            <label for="name" class="form-label">nama</label>
-                                            <input type="text" class="form-control mb-3" id="name" placeholder="Nama"
-                                                required>
+                                            <label for="day_name" class="form-label">Hari</label>
+                                            <select class="form-select mb-3" id="day_name" required>
+                                                <option value="" selected disabled>Pilih Hari</option>
+                                                <option value="MINGGU">MINGGU</option>
+                                                <option value="SENIN">SENIN</option>
+                                                <option value="SELASA">SELASA</option>
+                                                <option value="RABU">RABU</option>
+                                                <option value="KAMIS">KAMIS</option>
+                                                <option value="JUMAT">JUMAT</option>
+                                                <option value="SABTU">SABTU</option>
+                                            </select>
 
                                             <label for="start_time" class="form-label">Mulai</label>
-                                            <input type="time" class="form-control mb-3" id="start_time" placeholder="start_time"
-                                                required>
+                                            <input type="time" class="form-control mb-3" id="start_time"
+                                                placeholder="start_time" required>
 
                                             <label for="end_time" class="form-label">Selesai</label>
-                                            <input type="time" class="form-control mb-3" id="end_time" placeholder="end_time"
-                                                required>
+                                            <input type="time" class="form-control mb-3" id="end_time"
+                                                placeholder="end_time" required>
                                         </div>
                                 </form>
                             </div>

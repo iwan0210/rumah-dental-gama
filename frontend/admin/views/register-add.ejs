@@ -67,14 +67,18 @@
                                         <div class="col-sm-6 mb-3">
                                             <label for="tanggal-periksa" class="form-label">Tanggal Periksa</label>
                                             <div class="input-group">
-                                                <input type="date" class="form-control" id="tanggal-periksa" readonly>
+                                                <input type="date" class="form-control" id="tanggal-periksa">
                                                 <button class="btn btn-secondary" id="today-btn" type="button"
                                                     onclick="today()">Hari Ini</button>
                                             </div>
                                         </div>
                                         <label class="form-label d-flex justify-content-center">Jadwal</label>
                                         <div class="col-sm-12 mb-3 d-flex justify-content-center">
-                                            <div class="btn-group"  id="queueSessionGroup" role="group" aria-label="Queue Sessions">
+                                            <div class="btn-group" id="queueSessionGroup" role="group"
+                                                aria-label="Queue Sessions">
+                                                <div class="alert alert-warning w-100 text-center mb-0">
+                                                    Silahkan pilih tanggal terlebih dahulu.
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-sm-6 mb-3">
@@ -206,7 +210,13 @@
                 }
             })
 
-            loadQueueSessions()
+            const tanggalPeriksa = document.getElementById('tanggal-periksa')
+
+            tanggalPeriksa.addEventListener('change', (e) => {
+                loadSchedule(e.target.value);
+            })
+
+            //loadSchedule(tanggalPeriksa.value)
         })
 
     </script>

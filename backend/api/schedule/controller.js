@@ -1,19 +1,19 @@
-class QueueSessionHandler {
+class ScheduleHandler {
     constructor(service, validator) {
         this._service = service
         this._validator = validator
 
-        this.getAllQueueSessions = this.getAllQueueSessions.bind(this)
-        this.getAllActiveQueueSessions = this.getAllActiveQueueSessions.bind(this)
-        this.getQueueSessionById = this.getQueueSessionById.bind(this)
-        this.inserQueueSession = this.inserQueueSession.bind(this)
-        this.updateQueueSession = this.updateQueueSession.bind(this)
-        this.UpdateStatusQueueSession = this.UpdateStatusQueueSession.bind(this)
+        this.getAllSchedule = this.getAllSchedule.bind(this)
+        this.getActiveScheduleByDayName = this.getActiveScheduleByDayName.bind(this)
+        this.getActiveScheduleById = this.getActiveScheduleById.bind(this)
+        this.insertSchedule = this.insertSchedule.bind(this)
+        this.updateSchedule = this.updateSchedule.bind(this)
+        this.UpdateScheduleStatus = this.UpdateScheduleStatus.bind(this)
     }
 
-    async getAllQueueSessions(req, res, next) {
+    async getAllSchedule(req, res, next) {
         try {
-            const result = await this._service.getAllQueueSessions()
+            const result = await this._service.getAllSchedule()
 
             const response = {
                 error: false,
@@ -27,9 +27,11 @@ class QueueSessionHandler {
         }
     }
 
-    async getAllActiveQueueSessions(req, res, next) {
+    async getActiveScheduleByDayName(req, res, next) {
         try {
-            const result = await this._service.getAllActiveQueueSessions()
+            const { date } = req.params
+
+            const result = await this._service.getActiveScheduleByDayName(date)
 
             const response = {
                 error: false,
@@ -43,11 +45,11 @@ class QueueSessionHandler {
         }
     }
 
-    async getQueueSessionById(req, res, next) {
+    async getActiveScheduleById(req, res, next) {
         try {
             const { id } = req.params
-
-            const result = this._service.getQueueSessionsById(id)
+            
+            const result = await this._service.getActiveScheduleById(id)
 
             const response = {
                 error: false,
@@ -61,13 +63,13 @@ class QueueSessionHandler {
         }
     }
 
-    async inserQueueSession(req, res, next) {
+    async insertSchedule(req, res, next) {
         try {
-            this._validator.validateInsertQueueSessionPayload(req.body)
+            this._validator.validateInsertSchedulePayload(req.body)
 
-            const { name, startTime, endTime } = req.body
+            const { dayName, startTime, endTime } = req.body
 
-            const id = await this._service.inserQueueSession(name, startTime, endTime)
+            const id = await this._service.insertSchedule(dayName, startTime, endTime)
 
             const response = {
                 error: false,
@@ -83,15 +85,15 @@ class QueueSessionHandler {
         }
     }
 
-    async updateQueueSession(req, res, next) {
+    async updateSchedule(req, res, next) {
         try {
-            this._validator.validateUpdateQueueSessionPayload(req.body)
+            this._validator.validateUpdateSchedulePayload(req.body)
 
             const { id } = req.params
 
-            const { name, startTime, endTime } = req.body
-            
-            await this._service.updateQueueSession(id, name, startTime, endTime)
+            const { dayName, startTime, endTime } = req.body
+
+            await this._service.updateSchedule(id, dayName, startTime, endTime)
 
             const response = {
                 error: false,
@@ -104,15 +106,15 @@ class QueueSessionHandler {
         }
     }
 
-    async UpdateStatusQueueSession(req, res, next) {
+    async UpdateScheduleStatus(req, res, next) {
         try {
-            this._validator.validateUpdateStatusQueueSessionPayload(req.body)
+            this._validator.validateUpdateScheduleStatusPayload(req.body)
 
             const { id } = req.params
 
             const { status } = req.body
 
-            await this._service.UpdateStatusQueueSession(id, status)
+            await this._service.UpdateScheduleStatus(id, status)
 
             const response = {
                 error: false,
@@ -126,4 +128,4 @@ class QueueSessionHandler {
     }
 }
 
-module.exports = QueueSessionHandler
+module.exports = ScheduleHandler

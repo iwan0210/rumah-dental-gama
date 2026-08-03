@@ -8,29 +8,29 @@ class RegisterClass {
         this._pool = pool
     }
 
-    async register(noRM, tanggalDaftar, queueSession, keluhan) {
+    async register(noRM, tanggalDaftar, schedule, keluhan) {
 
         await this.checkDuplicate(noRM, tanggalDaftar)
 
         const id = nanoid(16)
-        const queueNumber = await this.getQueueNumber(tanggalDaftar, queueSession)
-        await this._pool.query("INSERT INTO registrasi (id, no_reg, no_rkm_medis, tanggal, queue_session, keluhan) VALUES (?, ?, ?, ?, ?, ?)",
-            [id, queueNumber, noRM, tanggalDaftar, queueSession, keluhan])
+        const queueNumber = await this.getQueueNumber(tanggalDaftar, schedule)
+        await this._pool.query("INSERT INTO registrasi (id, no_reg, no_rkm_medis, tanggal, schedule, keluhan) VALUES (?, ?, ?, ?, ?, ?)",
+            [id, queueNumber, noRM, tanggalDaftar, schedule, keluhan])
 
         return [id, queueNumber]
     }
 
-    async insertCompleteRegister(noRM, tanggalDaftar, queueSession, keluhan, diagnosa, tindakan, obat, total) {
+    async insertCompleteRegister(noRM, tanggalDaftar, schedule, keluhan, diagnosa, tindakan, obat, total) {
         const id = nanoid(16)
-        const queueNumber = await this.getQueueNumber(tanggalDaftar, queueSession)
-        await this._pool.query("INSERT INTO registrasi (id, no_reg, no_rkm_medis, tanggal, queue_session, keluhan, diagnosa, tindakan, obat, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [id, queueNumber, noRM, tanggalDaftar, queueSession, keluhan, diagnosa, tindakan, obat, total])
+        const queueNumber = await this.getQueueNumber(tanggalDaftar, schedule)
+        await this._pool.query("INSERT INTO registrasi (id, no_reg, no_rkm_medis, tanggal, schedule, keluhan, diagnosa, tindakan, obat, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [id, queueNumber, noRM, tanggalDaftar, schedule, keluhan, diagnosa, tindakan, obat, total])
         return id
     }
 
     async getAllRegister(page, limit, startDate, endDate) {
         const offset = (page - 1) * limit
-        const [result] = await this._pool.query("SELECT registrasi.*, pasien.*, queue_session.name as queue_name, queue_session.start_time, queue_session.end_time FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis join queue_session on registrasi.queue_session = queue_session.id WHERE tanggal BETWEEN ? AND ? ORDER BY tanggal DESC, start_time DESC, no_reg DESC LIMIT ? OFFSET ?", [startDate, endDate, parseInt(limit), offset])
+        const [result] = await this._pool.query("SELECT registrasi.*, pasien.*, schedule.day_name, schedule.start_time, schedule.end_time FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis join schedule on registrasi.schedule = schedule.id WHERE tanggal BETWEEN ? AND ? ORDER BY tanggal DESC, start_time DESC, no_reg DESC LIMIT ? OFFSET ?", [startDate, endDate, parseInt(limit), offset])
         const [count] = await this._pool.query("SELECT COUNT(*) as total FROM registrasi WHERE tanggal BETWEEN ? AND ?", [startDate, endDate])
         const total = count[0].total
         const totalPage = Math.ceil(total / limit) || 1
@@ -47,7 +47,7 @@ class RegisterClass {
 
     async getRegisterById(id) {
 
-        const [result] = await this._pool.query("SELECT registrasi.*, pasien.*, queue_session.name as queue_name, queue_session.start_time, queue_session.end_time FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis join queue_session on registrasi.queue_session = queue_session.id WHERE registrasi.id = ?", [id])
+        const [result] = await this._pool.query("SELECT registrasi.*, pasien.*, schedule.day_name, schedule.start_time, schedule.end_time FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis join schedule on registrasi.schedule = schedule.id WHERE registrasi.id = ?", [id])
 
         if (result.length < 1) {
             throw new NotFoundError(`Register dengan id ${id} tidak ditemukan`)
@@ -135,8 +135,8 @@ class RegisterClass {
         return result
     }
 
-    async getQueueNumber(registerDate, queueSession) {
-        const [result] = await this._pool.query("SELECT MAX(no_reg) as total FROM registrasi WHERE tanggal = ? and queue_session = ?", [registerDate, queueSession])
+    async getQueueNumber(registerDate, schedule) {
+        const [result] = await this._pool.query("SELECT MAX(no_reg) as total FROM registrasi WHERE tanggal = ? and schedule = ?", [registerDate, schedule])
         const total = result[0].total || 0
 
         return total + 1
@@ -209,7 +209,7 @@ class RegisterClass {
     }
 
     async getLogBookByRangeDate(startDate, endDate) {
-        const [result] = await this._pool.query("SELECT pasien.no_rkm_medis, pasien.nama, pasien.tgl_lahir, pasien.jk, pasien.alamat, registrasi.tanggal, registrasi.diagnosa FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis join queue_session on registrasi.queue_session = queue_session.id WHERE registrasi.tanggal BETWEEN ? AND ? ORDER BY registrasi.tanggal ASC, queue_session.start_time ASC, registrasi.no_reg ASC",
+        const [result] = await this._pool.query("SELECT pasien.no_rkm_medis, pasien.nama, pasien.tgl_lahir, pasien.jk, pasien.alamat, registrasi.tanggal, registrasi.diagnosa FROM registrasi join pasien on registrasi.no_rkm_medis = pasien.no_rkm_medis join schedule on registrasi.schedule = schedule.id WHERE registrasi.tanggal BETWEEN ? AND ? ORDER BY registrasi.tanggal ASC, schedule.start_time ASC, registrasi.no_reg ASC",
             [startDate, endDate]
         )
 

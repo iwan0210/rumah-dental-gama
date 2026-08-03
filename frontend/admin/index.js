@@ -9,8 +9,8 @@ const UsersService = require('../../backend/services/UsersService')
 const usersService = new UsersService()
 const PatientService = require('../../backend/services/PatientService')
 const patientService = new PatientService()
-const QueueSessionService = require('../../backend/services/QueueSessionService')
-const queueSessionService = new QueueSessionService()
+const ScheduleService = require('../../backend/services/ScheduleService')
+const scheduleService = new ScheduleService()
 
 const getCurrentDateInWIB = () => new Date().toLocaleDateString('sv-SE')
 
@@ -196,7 +196,7 @@ router.get('/queue-session/edit/:id', async (req, res) => {
         return res.status(404).render('404', { title: 'Forbidden' })
     }
 
-    const data = await queueSessionService.getQueueSessionsById(req.params.id)
+    const data = await scheduleService.getScheduleById(req.params.id)
     res.render('session-edit', { title: 'Ubah Jadwal', ...data, user: req.session.user})
 })
 

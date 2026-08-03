@@ -29,11 +29,11 @@
     }
 
     .btn-group.is-invalid .btn {
-        border-color: #dc3545;
+      border-color: #dc3545;
     }
 
-    .btn-group.is-invalid + .invalid-feedback {
-        display: block;
+    .btn-group.is-invalid+.invalid-feedback {
+      display: block;
     }
   </style>
 </head>
@@ -51,10 +51,13 @@
 
     <div class="mb-3">
       <label class="form-label">Jadwal</label>
-        <div class="col-sm-12 mb-3">
-            <div class="btn-group"  id="queueSessionGroup" role="group" aria-label="Queue Sessions">
-            </div>
+      <div class="col-sm-12 mb-3 d-flex justify-content-center">
+        <div class="btn-group w-100" id="queueSessionGroup" role="group" aria-label="Queue Sessions">
+          <div class="alert alert-warning w-100 text-center mb-0">
+            Silahkan pilih tanggal terlebih dahulu.
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Nama -->
@@ -91,28 +94,14 @@
 
         <div class="btn-group" role="group" aria-label="Jenis Kelamin">
 
-          <input 
-            type="radio" 
-            class="btn-check" 
-            name="jk" 
-            id="jkL" 
-            value="L"
-            autocomplete="off"
-            required>
+          <input type="radio" class="btn-check" name="jk" id="jkL" value="L" autocomplete="off" required>
 
           <label class="btn btn-outline-secondary" for="jkL">
             Laki-laki
           </label>
 
 
-          <input 
-            type="radio" 
-            class="btn-check" 
-            name="jk" 
-            id="jkP" 
-            value="P"
-            autocomplete="off"
-            required>
+          <input type="radio" class="btn-check" name="jk" id="jkP" value="P" autocomplete="off" required>
 
           <label class="btn btn-outline-secondary" for="jkP">
             Perempuan
@@ -186,188 +175,199 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-    // Set min date (today) for Tanggal Pemeriksaan
-    const tglInput = document.getElementById('tgl')
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+      // Set min date (today) for Tanggal Pemeriksaan
+      const tglInput = document.getElementById('tgl')
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    tglInput.min = `${yyyy}-${mm}-${dd}`;
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      tglInput.min = `${yyyy}-${mm}-${dd}`;
 
-    //global var isLibur
-    let isHariLibur = false
+      //global var isLibur
+      let isHariLibur = false
 
-    loadQueueSessions()
+      //cek hari libur (on change)
+      tglInput.addEventListener('change', async function () {
+        const tanggal = this.value
+        if (!tanggal) return
 
-    //cek hari libur (on change)
-    tglInput.addEventListener('change', async function() {
-      const tanggal = this.value
-      if (!tanggal) return
+        isHariLibur = false
 
-      isHariLibur = false
-
-      try {
-        const res = await axios.get(`/api/holiday/${tanggal}`)
-        if(res.data.data.tanggal) {
-          isHariLibur = true
+        try {
+          const res = await axios.get(`/api/holiday/${tanggal}`)
+          if (res.data.data.tanggal) {
+            isHariLibur = true
+          }
+        } catch (error) {
+          console.error('Gagal cek hari libur:', error)
         }
-      } catch (error) {
-        console.error('Gagal cek hari libur:', error)
-      }
 
-      validateTanggalPemeriksaan()
-    })
+        validateTanggalPemeriksaan()
+        loadQueueSessions(tanggal)
+      })
 
-    document.getElementById('formPasien').addEventListener('submit', function (e) {
-      e.preventDefault(); // Prevent form submission here
+      document.getElementById('formPasien').addEventListener('submit', function (e) {
+        e.preventDefault(); // Prevent form submission here
 
-      let isValid = true;
+        let isValid = true;
 
-      // --- VALIDATE TANGGAL LAHIR ---
-      const tgl = parseInt(document.getElementById('lahirTanggal').value);
-      const bln = parseInt(document.getElementById('lahirBulan').value) - 1;
-      const thn = parseInt(document.getElementById('lahirTahun').value);
-      const lahirError = document.getElementById('lahirError');
+        // --- VALIDATE TANGGAL LAHIR ---
+        const tgl = parseInt(document.getElementById('lahirTanggal').value);
+        const bln = parseInt(document.getElementById('lahirBulan').value) - 1;
+        const thn = parseInt(document.getElementById('lahirTahun').value);
+        const lahirError = document.getElementById('lahirError');
 
-      if (!tgl || bln < 0 || !thn) {
-        isValid = false;
-        lahirError.style.display = 'block';
-      } else {
-        const d = new Date(thn, bln, tgl);
-        if (
-          d.getFullYear() !== thn ||
-          d.getMonth() !== bln ||
-          d.getDate() !== tgl
-        ) {
+        if (!tgl || bln < 0 || !thn) {
           isValid = false;
           lahirError.style.display = 'block';
         } else {
-          lahirError.style.display = 'none';
+          const d = new Date(thn, bln, tgl);
+          if (
+            d.getFullYear() !== thn ||
+            d.getMonth() !== bln ||
+            d.getDate() !== tgl
+          ) {
+            isValid = false;
+            lahirError.style.display = 'block';
+          } else {
+            lahirError.style.display = 'none';
+          }
         }
-      }
 
-      if (!validateTanggalPemeriksaan()) {
-        isValid = false;
-      }
+        if (!validateTanggalPemeriksaan()) {
+          isValid = false;
+        }
 
-      if (!this.checkValidity() || !isValid) {
-        e.stopPropagation(); // Prevent propagation if form is invalid
-        this.classList.add('was-validated');
-        return; // Stop further execution if form is invalid
-      }
+        if (!this.checkValidity() || !isValid) {
+          e.stopPropagation(); // Prevent propagation if form is invalid
+          this.classList.add('was-validated');
+          return; // Stop further execution if form is invalid
+        }
 
-      // Get form data
-      const nama = document.getElementById('nama').value;
-      const nik = document.getElementById('nik').value;
-      const nohp = document.getElementById('nohp').value;
-      const alamat = document.getElementById('alamat').value;
-      const jk = document.querySelector('input[name="jk"]:checked').value;
-      const selectedQueueSession = document.querySelector('input[name="queue_session_id"]:checked')
-      const tglLahir = `${document.getElementById('lahirTahun').value}-${String(document.getElementById('lahirBulan').value).padStart(2, '0')}-${String(document.getElementById('lahirTanggal').value).padStart(2, '0')}`;
-      const tanggalDaftar = document.getElementById('tgl').value;
-      const keluhan = document.getElementById('keluhan').value;
+        // Get form data
+        const nama = document.getElementById('nama').value;
+        const nik = document.getElementById('nik').value;
+        const nohp = document.getElementById('nohp').value;
+        const alamat = document.getElementById('alamat').value;
+        const jk = document.querySelector('input[name="jk"]:checked').value;
+        const selectedQueueSession = document.querySelector('input[name="queue_session_id"]:checked')
+        const tglLahir = `${document.getElementById('lahirTahun').value}-${String(document.getElementById('lahirBulan').value).padStart(2, '0')}-${String(document.getElementById('lahirTanggal').value).padStart(2, '0')}`;
+        const tanggalDaftar = document.getElementById('tgl').value;
+        const keluhan = document.getElementById('keluhan').value;
 
-      if (!selectedQueueSession) {
+        if (!selectedQueueSession) {
           alert("Silakan pilih jadwal.");
           btn.disabled = false;
           btn.innerText = "Daftar Sekarang";
           return;
+        }
+
+        const schedule = Number(selectedQueueSession.value);
+
+        // Prepare data object for POST request
+        const formData = {
+          nama,
+          nik,
+          nohp,
+          alamat,
+          jk,
+          tglLahir,
+          tanggalDaftar,
+          schedule,
+          keluhan,
+        };
+
+        // Send data to the server via Axios
+        axios.post('/api/register/new', formData)
+          .then((response) => {
+            window.location.href = '/register/' + response.data.data.id; // Redirect after successful submission
+          })
+          .catch((error) => {
+            alert(`Terjadi kesalahan saat pendaftaran. Silakan coba lagi. \n${error.response.data.message}`);
+          })
+      })
+
+      function validateTanggalPemeriksaan() {
+        const tanggal = tglInput.value
+        if (!tanggal) return false
+
+        const selectedDate = new Date(tanggal)
+        selectedDate.setHours(0, 0, 0, 0)
+        today.setHours(0, 0, 0, 0)
+
+        // RESET STATE (INI KUNCI)
+        tglInput.classList.remove('is-valid', 'is-invalid')
+        tglInput.setCustomValidity('')
+
+        if (selectedDate < today) {
+          tglInput.setCustomValidity('Tanggal sebelum hari ini')
+          tglInput.classList.add('is-invalid');
+          tglInput.nextElementSibling.textContent =
+            'Tanggal pemeriksaan tidak boleh sebelum hari ini.'
+          return false;
+        }
+
+        if (isHariLibur) {
+          tglInput.setCustomValidity('Hari libur')
+          tglInput.classList.add('is-invalid')
+          tglInput.nextElementSibling.textContent =
+            'Tanggal tersebut tutup.'
+          return false
+        }
+
+        tglInput.classList.add('is-valid')
+        return true
       }
 
-      const queueSession = Number(selectedQueueSession.value);
 
-      // Prepare data object for POST request
-      const formData = {
-        nama,
-        nik,
-        nohp,
-        alamat,
-        jk,
-        tglLahir,
-        tanggalDaftar,
-        queueSession,
-        keluhan,
-      };
-
-      // Send data to the server via Axios
-      axios.post('/api/register/new', formData)
-        .then((response) => {
-          window.location.href = '/register/' + response.data.data.id; // Redirect after successful submission
-        })
-        .catch((error) => {
-          alert(`Terjadi kesalahan saat pendaftaran. Silakan coba lagi. \n${error.response.data.message}`);
-        })
     })
 
-    function validateTanggalPemeriksaan() {
-      const tanggal = tglInput.value
-      if (!tanggal) return false
-
-      const selectedDate = new Date(tanggal)
-      selectedDate.setHours(0, 0, 0, 0)
-      today.setHours(0, 0, 0, 0)
-
-      // RESET STATE (INI KUNCI)
-      tglInput.classList.remove('is-valid', 'is-invalid')
-      tglInput.setCustomValidity('')
-
-      if (selectedDate < today) {
-        tglInput.setCustomValidity('Tanggal sebelum hari ini')
-        tglInput.classList.add('is-invalid');
-        tglInput.nextElementSibling.textContent =
-            'Tanggal pemeriksaan tidak boleh sebelum hari ini.'
-        return false;
-      }
-
-      if (isHariLibur) {
-        tglInput.setCustomValidity('Hari libur')
-        tglInput.classList.add('is-invalid')
-        tglInput.nextElementSibling.textContent =
-            'Tanggal tersebut tutup.'
-        return false
-      }
-
-      tglInput.classList.add('is-valid')
-      return true 
-    }
-
-    
-  })
-
-  const loadQueueSessions = async () => {
+    const loadQueueSessions = async (date) => {
       try {
-          const response = await axios.get('/api/queue-session/active');
-          const sessions = response.data.data;
+        const response = await axios.get(`/api/schedules/active/${date}`);
+        const sessions = response.data.data;
 
-          const container = document.getElementById('queueSessionGroup');
-          container.innerHTML = '';
+        const container = document.getElementById('queueSessionGroup');
+        container.innerHTML = '';
 
-          sessions.forEach((session, index) => {
-              const input = document.createElement('input');
-              input.type = 'radio';
-              input.className = 'btn-check';
-              input.name = 'queue_session_id';
-              input.id = `queue-session-${session.id}`;
-              input.value = session.id;
-              input.autocomplete = 'off';
-              input.required = true;
+        if (!sessions || sessions.length === 0) {
+          container.classList.add('w-100')
+          container.innerHTML = `
+                        <div class="alert alert-warning w-100 text-center mb-0">
+                            Tidak ada jadwal tersedia pada tanggal yang dipilih.
+                        </div>
+                    `;
+          return;
+        }
 
-              if (sessions.length === 1) {
-                  input.checked = true;
-              }
+        container.classList.remove('w-100')
 
-              const label = document.createElement('label');
-              label.className = 'btn btn-outline-secondary';
-              label.htmlFor = input.id;
-              label.textContent = `${session.start_time.slice(0, 5)} - ${session.end_time.slice(0, 5)}`;
+        sessions.forEach((session, index) => {
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.className = 'btn-check';
+          input.name = 'queue_session_id';
+          input.id = `queue-session-${session.id}`;
+          input.value = session.id;
+          input.autocomplete = 'off';
+          input.required = true;
 
-              container.appendChild(input);
-              container.appendChild(label);
-          });
+          if (sessions.length === 1) {
+            input.checked = true;
+          }
+
+          const label = document.createElement('label');
+          label.className = 'btn btn-outline-secondary';
+          label.htmlFor = input.id;
+          label.textContent = `${session.start_time.slice(0, 5)} - ${session.end_time.slice(0, 5)}`;
+
+          container.appendChild(input);
+          container.appendChild(label);
+        });
       } catch (error) {
-          console.error(error);
+        console.error(error);
       }
     }
   </script>

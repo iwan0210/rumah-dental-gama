@@ -316,9 +316,10 @@ const logout = async () => {
 }
 
 const today = () => {
-    const today = getCurrentDateInWIB()
+    const input = document.getElementById('tanggal-periksa')
 
-    document.getElementById('tanggal-periksa').value = today
+    input.value = getCurrentDateInWIB()
+    input.dispatchEvent(new Event('change'))
 }
 
 const clearForm = () => {
@@ -363,7 +364,7 @@ const insertData = async () => {
     const data = {
         no_rkm_medis: document.getElementById('no_rkm_medis').value,
         tanggalDaftar: document.getElementById('tanggal-periksa').value,
-        queueSession: Number(document.querySelector('input[name="queue_session_id"]:checked')?.value),
+        schedule: Number(document.querySelector('input[name="queue_session_id"]:checked')?.value),
         keluhan: document.getElementById('keluhan').value.trim(),
         diagnosa: document.getElementById('diagnosa').value.trim(),
         tindakan: document.getElementById('tindakan').value.trim(),
@@ -1492,13 +1493,22 @@ const doMergePatient = async (sourceRM, targetRM) => {
     }
 }
 
-const loadQueueSessions = async () => {
+const loadSchedule = async (date) => {
     try {
-        const response = await axios.get('/api/queue-session/active');
+        const response = await axios.get(`/api/schedules/active/${date}`);
         const sessions = response.data.data;
 
         const container = document.getElementById('queueSessionGroup');
         container.innerHTML = '';
+
+        if (!sessions || sessions.length === 0) {
+            container.innerHTML = `
+                        <div class="alert alert-warning w-100 text-center mb-0">
+                            Tidak ada jadwal tersedia pada tanggal yang dipilih.
+                        </div>
+                    `;
+            return;
+        }
 
         sessions.forEach((session, index) => {
             const input = document.createElement('input');
@@ -1529,7 +1539,7 @@ const loadQueueSessions = async () => {
 
 const fetchQueueSessions = async () => {
     try {
-        const response = await axios.get('/api/queue-session')
+        const response = await axios.get('/api/schedules')
 
         const { data } = response.data
 
@@ -1540,14 +1550,14 @@ const fetchQueueSessions = async () => {
 
             row.innerHTML = `
                 <td>${item.id}</td>
-                <td>${item.name}</td>
+                <td>${item.day_name}</td>
                 <td>${item.start_time}</td>
                 <td>${item.end_time}</td>
                 <td>
-                    ${item.status == 1 
-                        ? '<span class="badge bg-success">Aktif</span>' 
-                        : '<span class="badge bg-secondary">Nonaktif</span>'
-                    }
+                    ${item.status == 1
+                    ? '<span class="badge bg-success">Aktif</span>'
+                    : '<span class="badge bg-secondary">Nonaktif</span>'
+                }
                 </td>
                 <td>
                     <button 
@@ -1556,21 +1566,20 @@ const fetchQueueSessions = async () => {
                         Edit
                     </button>
 
-                    ${
-                        item.status == 1
-                        ?
-                        `<button 
+                    ${item.status == 1
+                    ?
+                    `<button 
                             class="btn btn-danger" 
                             onclick="updateStatusQueueSession('${item.id}', 0)">
                             Deactivate
                         </button>`
-                        :
-                        `<button 
+                    :
+                    `<button 
                             class="btn btn-success" 
                             onclick="updateStatusQueueSession('${item.id}', 1)">
                             Activate
                         </button>`
-                    }
+                }
                 </td>
             `
 
@@ -1583,18 +1592,18 @@ const fetchQueueSessions = async () => {
 }
 
 const addQueueSession = async () => {
-    const name = document.getElementById('name').value.trim()
+    const dayName = document.getElementById('day_name').value.trim()
     const startTime = document.getElementById('start_time').value.trim()
     const endTime = document.getElementById('end_time').value.trim()
 
-    if (!name || !startTime || !endTime) {
+    if (!dayName || !startTime || !endTime) {
         alert('nama, jam mulai, dan jam selesai are required.')
         return
     }
 
     try {
-        await axios.post('/api/queue-session', {
-            name: name,
+        await axios.post('/api/schedules', {
+            dayName: dayName,
             startTime: startTime,
             endTime: endTime
         });
@@ -1624,18 +1633,18 @@ const editQueueSession = id => {
 }
 
 const changeQueueSession = async id => {
-    const name = document.getElementById('name').value.trim()
+    const dayName = document.getElementById('day_name').value.trim()
     const startTime = document.getElementById('start_time').value.trim()
     const endTime = document.getElementById('end_time').value.trim()
 
-    if (!name || !startTime || !endTime) {
+    if (!dayName || !startTime || !endTime) {
         alert('nama, jam mulai, dan jam selesai are required.')
         return
     }
 
     try {
-        await axios.put('/api/queue-session/'+id, {
-            name: name,
+        await axios.put('/api/schedules/' + id, {
+            dayName: dayName,
             startTime: startTime,
             endTime: endTime
         });
@@ -1655,7 +1664,7 @@ const updateStatusQueueSession = async (id, status) => {
     }
 
     try {
-        await axios.patch('/api/queue-session/'+id, {
+        await axios.patch('/api/schedules/' + id, {
             status: status
         });
 

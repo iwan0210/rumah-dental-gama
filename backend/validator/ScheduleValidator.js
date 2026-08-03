@@ -1,19 +1,30 @@
 const Joi = require('joi')
 const InvariantError = require('../exceptions/InvariantError')
 
-const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/
 
-const QueueSessionSchema = {
-    insertQueueSession: Joi.object({
-        name: Joi.string()
+const dayNames = [
+    'MINGGU',
+    'SENIN',
+    'SELASA',
+    'RABU',
+    'KAMIS',
+    'JUMAT',
+    'SABTU'
+]
+
+const ScheduleSchema = {
+    insertSchedule: Joi.object({
+        dayName: Joi.string()
             .trim()
-            .max(50)
+            .uppercase()
+            .valid(...dayNames)
             .required()
             .messages({
-                'string.base': 'Nama sesi harus berupa teks.',
-                'string.empty': 'Nama sesi wajib diisi.',
-                'string.max': 'Nama sesi maksimal 50 karakter.',
-                'any.required': 'Nama sesi wajib diisi.'
+                'string.base': 'Nama hari harus berupa teks.',
+                'string.empty': 'Nama hari wajib diisi.',
+                'any.only': 'Nama hari tidak valid.',
+                'any.required': 'Nama hari wajib diisi.'
             }),
 
         startTime: Joi.string()
@@ -34,32 +45,34 @@ const QueueSessionSchema = {
                 'any.required': 'Jam selesai wajib diisi.'
             })
     })
-    .custom((value, helpers) => {
-        if (value.startTime >= value.endTime) {
-            return helpers.error('any.invalid');
-        }
-        return value;
-    })
-    .messages({
-        'any.invalid': 'Jam selesai harus lebih besar dari jam mulai.'
-    }),
+        .custom((value, helpers) => {
+            if (value.startTime >= value.endTime) {
+                return helpers.error('any.invalid');
+            }
+            return value;
+        })
+        .messages({
+            'any.invalid': 'Jam selesai harus lebih besar dari jam mulai.'
+        }),
 
-    updateQueueSession: Joi.object({
-        name: Joi.string()
+    updateSchedule: Joi.object({
+        dayName: Joi.string()
             .trim()
-            .max(50)
+            .uppercase()
+            .valid(...dayNames)
             .required()
             .messages({
-                'string.base': 'Nama sesi harus berupa teks.',
-                'string.empty': 'Nama sesi wajib diisi.',
-                'string.max': 'Nama sesi maksimal 50 karakter.',
-                'any.required': 'Nama sesi wajib diisi.'
+                'string.base': 'Nama hari harus berupa teks.',
+                'string.empty': 'Nama hari wajib diisi.',
+                'any.only': 'Nama hari tidak valid.',
+                'any.required': 'Nama hari wajib diisi.'
             }),
 
         startTime: Joi.string()
             .pattern(timePattern)
             .required()
             .messages({
+                'string.empty': 'Jam mulai wajib diisi.',
                 'string.pattern.base': 'Format jam mulai harus HH:mm.',
                 'any.required': 'Jam mulai wajib diisi.'
             }),
@@ -68,21 +81,22 @@ const QueueSessionSchema = {
             .pattern(timePattern)
             .required()
             .messages({
+                'string.empty': 'Jam selesai wajib diisi.',
                 'string.pattern.base': 'Format jam selesai harus HH:mm.',
                 'any.required': 'Jam selesai wajib diisi.'
             })
     })
-    .custom((value, helpers) => {
-        if (value.startTime >= value.endTime) {
-            return helpers.error('any.invalid');
-        }
-        return value;
-    })
-    .messages({
-        'any.invalid': 'Jam selesai harus lebih besar dari jam mulai.'
-    }),
+        .custom((value, helpers) => {
+            if (value.startTime >= value.endTime) {
+                return helpers.error('any.invalid');
+            }
+            return value;
+        })
+        .messages({
+            'any.invalid': 'Jam selesai harus lebih besar dari jam mulai.'
+        }),
 
-    updateStatusQueueSession: Joi.object({
+    updateScheduleStatus: Joi.object({
         status: Joi.number()
             .integer()
             .valid(0, 1)
@@ -96,25 +110,25 @@ const QueueSessionSchema = {
     })
 }
 
-const QueueSessionValidator = {
-    validateInsertQueueSessionPayload: payload => {
-        const validationResult = QueueSessionSchema.insertQueueSession.validate(payload)
+const ScheduleValidator = {
+    validateInsertSchedulePayload: payload => {
+        const validationResult = ScheduleSchema.insertSchedule.validate(payload)
 
         if (validationResult.error) {
             throw new InvariantError(validationResult.error.message)
         }
     },
 
-    validateUpdateQueueSessionPayload: payload => {
-        const validationResult = QueueSessionSchema.updateQueueSession.validate(payload)
+    validateUpdateSchedulePayload: payload => {
+        const validationResult = ScheduleSchema.updateSchedule.validate(payload)
 
         if (validationResult.error) {
             throw new InvariantError(validationResult.error.message)
         }
     },
 
-    validateUpdateStatusQueueSessionPayload: payload => {
-        const validationResult = QueueSessionSchema.updateStatusQueueSession.validate(payload)
+    validateUpdateScheduleStatusPayload: payload => {
+        const validationResult = ScheduleSchema.updateScheduleStatus.validate(payload)
 
         if (validationResult.error) {
             throw new InvariantError(validationResult.error.message)
@@ -122,4 +136,4 @@ const QueueSessionValidator = {
     }
 }
 
-module.exports = QueueSessionValidator
+module.exports = ScheduleValidator

@@ -1,11 +1,11 @@
 class RegisterHandler {
-    constructor(service, validator, axios, ExcelJS, patient, queueSession) {
+    constructor(service, validator, axios, ExcelJS, patient, scheduleService) {
         this._service = service
         this._validator = validator
         this._axios = axios
         this._ExcelJS = ExcelJS
         this._patient = patient
-        this._queueSession = queueSession
+        this._scheduleService = scheduleService
 
         this.postRegisterHandler = this.postRegisterHandler.bind(this)
         this.postRegisterNewHandler = this.postRegisterNewHandler.bind(this)
@@ -27,11 +27,11 @@ class RegisterHandler {
     async postRegisterHandler(req, res, next) {
         try {
             this._validator.validateAddRegisterPayload(req.body)
-            const { no_rkm_medis, tanggalDaftar, queueSession, keluhan } = req.body
+            const { no_rkm_medis, tanggalDaftar, schedule, keluhan } = req.body
 
-            await this._queueSession.getActiveQueueSessionById(queueSession)
+            await this._scheduleService.getActiveScheduleById(schedule)
 
-            const [id, queueNumber] = await this._service.register(no_rkm_medis, tanggalDaftar, queueSession, keluhan)
+            const [id, queueNumber] = await this._service.register(no_rkm_medis, tanggalDaftar, schedule, keluhan)
 
             this._sendWhatsappMessage(id).catch(err => console.log("WA error ignored:", err.message))
 
@@ -52,12 +52,12 @@ class RegisterHandler {
     async postRegisterNewHandler(req, res, next) {
         try {
             this._validator.validateAddRegisterNewPayload(req.body)
-            const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, queueSession, keluhan } = req.body
+            const { nama, nik, nohp, alamat, jk, tglLahir, tanggalDaftar, schedule, keluhan } = req.body
 
-            await this._queueSession.getActiveQueueSessionById(queueSession)
+            await this._scheduleService.getActiveScheduleById(schedule)
 
             const newRM = await this._patient.addPatient(nama, nik, jk, tglLahir, nohp, alamat)
-            const [id, queueNumber] = await this._service.register(newRM, tanggalDaftar, queueSession, keluhan)
+            const [id, queueNumber] = await this._service.register(newRM, tanggalDaftar, schedule, keluhan)
 
             this._sendWhatsappMessage(id).catch(err => console.log("WA error ignored:", err.message))
 
@@ -153,11 +153,11 @@ class RegisterHandler {
     async postCompleteRegisterHandler(req, res, next) {
         try {
             this._validator.validateAddRegisterCompletePayload(req.body)
-            const { no_rkm_medis, tanggalDaftar, queueSession, keluhan, diagnosa, tindakan, obat, total } = req.body
+            const { no_rkm_medis, tanggalDaftar, schedule, keluhan, diagnosa, tindakan, obat, total } = req.body
 
-            await this._queueSession.getActiveQueueSessionById(queueSession)
+            await this._scheduleService.getActiveScheduleById(schedule)
 
-            const id = await this._service.insertCompleteRegister(no_rkm_medis, tanggalDaftar, queueSession, keluhan, diagnosa, tindakan, obat, total)
+            const id = await this._service.insertCompleteRegister(no_rkm_medis, tanggalDaftar, schedule, keluhan, diagnosa, tindakan, obat, total)
             const response = {
                 error: false,
                 status: 201,
@@ -192,7 +192,7 @@ class RegisterHandler {
         const result = await this._service.getRegisterById(id)
         const age = this.getAge(result.tgl_lahir)
         const jenisKelamin = result.jk === 'L' ? 'Laki-laki' : 'Perempuan'
-        const jadwal = `${result.queue_name} (${result.start_time.slice(0, 5)} - ${result.end_time.slice(0, 5)})`
+        const jadwal = `${result.day_name} (${result.start_time.slice(0, 5)} - ${result.end_time.slice(0, 5)})`
         const message = `*🦷 Rumah Dental Gama - Pendaftaran Berhasil ✅*\n\n` +
             `Halo *${result.nama}*,\n` +
             `Terima kasih telah melakukan pendaftaran di *Rumah Dental Gama*.\n\n` +

@@ -98,12 +98,14 @@
                             <div class="mb-3">
                                 <label class="form-label small text-muted">Nomor Rekam Medis / NIK</label>
                                 <input type="text" id="no_identitas" class="form-control"
-                                    placeholder="Masukkan No RM atau NIK" required>
+                                    placeholder="Masukkan No RM atau NIK" name="no_identitas" autocomplete="on"
+                                    required>
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label small text-muted">Tanggal Lahir</label>
-                                <input type="date" id="tgl_lahir" class="form-control" required>
+                                <input type="date" id="tgl_lahir" class="form-control" name="bday" autocomplete="bday"
+                                    required>
                             </div>
 
                             <button class="btn btn-primary w-100">
@@ -172,7 +174,7 @@
                             <small id="info_libur" class="d-block mt-1"></small>
                             <label class="form-label small text-muted d-flex justify-content-center">Jadwal</label>
                             <div class="col-sm-12 mb-3 d-flex justify-content-center">
-                                <div class="btn-group"  id="queueSessionGroup" role="group" aria-label="Queue Sessions">
+                                <div class="btn-group" id="queueSessionGroup" role="group" aria-label="Queue Sessions">
                                 </div>
                             </div>
                             <label class="form-label small text-muted">Keluhan</label>
@@ -196,6 +198,7 @@
         const formLanjutan = document.getElementById('formLanjutan');
         const btnText = document.getElementById('btnText');
         const tglInput = document.getElementById('tgl_periksa');
+        const btnDaftar = document.getElementById('btnDaftar');
 
         // elemen info libur (tambahkan di HTML di bawah input tanggal)
         const infoLibur = document.getElementById('info_libur');
@@ -246,6 +249,8 @@
             }
 
             validateTanggal();
+            await loadQueueSessions(tanggal)
+            updateRegisterButton();
         });
 
         // validasi tanggal pemeriksaan
@@ -375,13 +380,13 @@
                 return;
             }
 
-            const queueSession = Number(selectedQueueSession.value);
+            const schedule = Number(selectedQueueSession.value);
 
             try {
                 const res = await axios.post('/api/register', {
                     no_rkm_medis,
                     tanggalDaftar: tgl_periksa,
-                    queueSession,
+                    schedule,
                     keluhan
                 });
 
@@ -430,13 +435,22 @@
             document.getElementById('keluhan').value = "";
         }
 
-        const loadQueueSessions = async () => {
+        const loadQueueSessions = async (date) => {
             try {
-                const response = await axios.get('/api/queue-session/active');
+                const response = await axios.get(`/api/schedules/active/${date}`);
                 const sessions = response.data.data;
 
                 const container = document.getElementById('queueSessionGroup');
                 container.innerHTML = '';
+
+                if (!sessions || sessions.length === 0) {
+                    container.innerHTML = `
+                        <div class="alert alert-warning w-100 text-center mb-0">
+                            Tidak ada jadwal tersedia pada tanggal yang dipilih.
+                        </div>
+                    `;
+                    return;
+                }
 
                 sessions.forEach((session, index) => {
                     const input = document.createElement('input');
@@ -465,7 +479,12 @@
             }
         }
 
-        loadQueueSessions()
+        function updateRegisterButton() {
+            const hasSchedule =
+                document.querySelectorAll('input[name="queue_session_id"]').length > 0;
+
+            btnDaftar.disabled = !validateTanggal() || !hasSchedule;
+        }
     </script>
 
 </body>
