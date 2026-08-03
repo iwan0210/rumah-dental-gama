@@ -7,6 +7,9 @@ const csrf = require('csurf')
 const session = require('express-session')
 const MySQLStore = require('express-mysql-session')(session);
 const port = process.env.PORT || 3000
+const appConfig = require('./config/app')
+
+app.locals.app = appConfig
 
 const dbOptions = {
     host: process.env.MYSQLHOST || 'localhost',

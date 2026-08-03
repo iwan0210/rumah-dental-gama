@@ -20,6 +20,13 @@ let modal
 let debounceTimer = null
 let currentController = null
 
+const body = document.body
+
+const clinicName = body.dataset.clinicName
+const shortName = body.dataset.clinicShortName
+const address = body.dataset.clinicAddress
+const phone = body.dataset.clinicPhone
+
 const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
 const Default = {
     scrollbarTheme: 'os-theme-light',
@@ -516,9 +523,9 @@ const printRegister = id => {
 
     const htmlContent = `
         <div class="center">
-            <h3>Rumah Dental Gama</h3>
-            <div>Jl. Gajah Mada Gg. Kasuari No. 15 Bogoran, Kauman, Batang</div>
-            <div>Telp: 0823-1454-1887</div>
+            <h3>${clinicName}</h3>
+            <div>${address}</div>
+            <div>Telp: ${phone}</div>
             <div class="line"></div>
             <strong>INVOICE</strong>
             <div>${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</div>
@@ -617,9 +624,9 @@ const printQueue = id => {
 
     const html = `
         <div class="center">
-            <h3>Rumah Dental Gama</h3>
-            <div>Jl. Gajah Mada Gg. Kasuari No. 15 Bogoran, Kauman, Batang</div>
-            <div>Telp: 0823-1454-1887</div>
+            <h3>${clinicName}</h3>
+            <div>${address}</div>
+            <div>Telp: ${phone}</div>
         </div>
 
         <div class="line"></div>

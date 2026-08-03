@@ -1,3 +1,5 @@
+const { name } = require('../../../config/app')
+
 class RegisterHandler {
     constructor(service, validator, axios, ExcelJS, patient, scheduleService) {
         this._service = service
@@ -193,9 +195,9 @@ class RegisterHandler {
         const age = this.getAge(result.tgl_lahir)
         const jenisKelamin = result.jk === 'L' ? 'Laki-laki' : 'Perempuan'
         const jadwal = `${result.day_name} (${result.start_time.slice(0, 5)} - ${result.end_time.slice(0, 5)})`
-        const message = `*🦷 Rumah Dental Gama - Pendaftaran Berhasil ✅*\n\n` +
+        const message = `*🦷 ${name} - Pendaftaran Berhasil ✅*\n\n` +
             `Halo *${result.nama}*,\n` +
-            `Terima kasih telah melakukan pendaftaran di *Rumah Dental Gama*.\n\n` +
+            `Terima kasih telah melakukan pendaftaran di *${name}*.\n\n` +
             `📅 *Tanggal Daftar:* ${result.tanggal}\n\n` +
             `🕒 *Jadwal:* ${jadwal}\n\n` +
             `🔢 *Nomor Antrian:* ${result.no_reg}\n\n` +
@@ -210,7 +212,7 @@ class RegisterHandler {
             `• Keluhan: ${result.keluhan}\n\n` +
             `🔗 *Detail Pendaftaran:*\n` +
             `https://${process.env.HOST}/register/${id}\n\n` +
-            `🙏 *Mohon datang tepat waktu sesuai jadwal. Kami tunggu kehadiran Anda di Rumah Dental Gama.*`
+            `🙏 *Mohon datang tepat waktu sesuai jadwal. Kami tunggu kehadiran Anda di ${name}.*`
 
         try {
             await this._axios.post('https://api.fonnte.com/send/', { target: result.nohp, message: message },
