@@ -97,11 +97,14 @@ const scheduleRoutes = require('./backend/api/schedule/routes')
 const visitorRoutes = require('./frontend/visitor')
 const adminRoutes = require('./frontend/admin')
 
-app.use('/api/register', registerRoutes, errorHandler)
-app.use('/api/users', usersRoutes, errorHandler)
-app.use('/api/holiday', holidayRoutes, errorHandler)
-app.use('/api/patient', patientRoutes, errorHandler)
-app.use('/api/schedules', scheduleRoutes, errorHandler)
+app.use('/api/register', registerRoutes)
+app.use('/api/users', usersRoutes)
+app.use('/api/holiday', holidayRoutes)
+app.use('/api/patient', patientRoutes)
+app.use('/api/schedules', scheduleRoutes)
+
+app.use('/api', errorHandler);
+
 app.use('/', visitorRoutes)
 app.use('/admin', adminRoutes)
 

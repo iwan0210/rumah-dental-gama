@@ -17,6 +17,6 @@ router.delete('/:id', verifyToken(['admin']), csrfProtection, usersHandler.delet
 router.put('/:id', verifyToken(['admin']), csrfProtection, usersHandler.putUserUpdateHandler)
 router.post('/Auth', usersHandler.postUserLoginHandler)
 router.put('/Auth/Password', verifyToken(), csrfProtection, usersHandler.putUserChangePasswordHandler)
-router.post('/Auth/Logout', verifyToken(), csrfProtection, usersHandler.postUserLogoutHandler)
+router.post('/Auth/Logout', verifyToken(), usersHandler.postUserLogoutHandler)
 
 module.exports = router
